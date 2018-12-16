@@ -14,10 +14,8 @@
     <v-btn icon @click="$refs.imgPicker.click()">
         <v-icon>add_to_photos</v-icon>
     </v-btn>
-    <input type="file" accept="image/*" style="display: none;" name="uploadPic" @change="handleInputImage($event.target.files[0])"
-           ref="imgPicker">
-    <!-- <input type="file" ref="imgPicker" @onchange="handleInputImage(this)" accept="image/*" style="display: none;"> -->
-    
+    <input type="file" style="display: none;" name="uploadPic" @change="handleInputImage($event.target)"
+           ref="imgPicker">    
   </v-toolbar>
 </template>
 <script>
@@ -27,8 +25,9 @@ export default {
     handleDrawerToggle () {
         window.getApp.$emit('APP_DRAWER_TOGGLED');
     },
-    handleInputImage (image) {
-        window.getApp.$emit('APP_UPLOAD',image);
+    handleInputImage (target) {
+        window.getApp.$emit('APP_UPLOAD',target.files[0]);
+        target.value = '';
     }
   }
 };
