@@ -2,15 +2,14 @@
  <v-layout>
     <v-flex>
       <v-card>
-        <canvas id="workbench"></canvas>
-    
-
         <v-card-title primary-title>
           <div>
             <h3 class="headline mb-0">Canvas</h3>
           </div>
         </v-card-title>
-
+        <v-responsive>
+           <canvas id="workbench" ref="canvas"></canvas>
+        </v-responsive>
         <v-card-actions>
           <v-btn flat color="orange">Resetar controles</v-btn>
           <v-btn flat color="red">Apagar tudo</v-btn>
@@ -33,12 +32,12 @@
           Fechar
         </v-btn>
       </v-snackbar>
-      <img id="imageSrc" :src="imgSrc" @onload="imageLoaded($event.target)" alt="No Image"/>
   </v-layout>
 </template>
 
 <script>
 import cv from "openCV";
+import Image from '@/api/image';
 /* eslint-disable */
   export default {
     name: "app-toolbox",
@@ -68,8 +67,18 @@ import cv from "openCV";
         const reader = new FileReader();
          var vm = this;
           reader.onload = function(e) {
-        console.log("ReaderOnLoad", e.target.result);
-        console.log(window.atob(e.target.result.split(',')[1]));
+            vm.imageLoad.img = new Image(window.atob(e.target.result.split(',')[1]));;
+            if (vm.imageLoad.img) {
+              console.log("PGM!");
+              console.log(vm.imageLoad.img);
+              vm.imageLoad.img._formatter.getCanvas(vm.imageLoad.img._parser,vm.$refs.canvas);
+              
+
+
+            } else {
+              console.log("NOT a PGM!");
+              console.log(vm.imageLoad.img);
+            }
             // vm.imageLoad.load = true;
             // vm.imageLoad.img = e.target.result;       
             // vm.imgSrc = e.target.result;

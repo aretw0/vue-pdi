@@ -3,7 +3,7 @@ const Menu =  [
   {
     title: 'Aritméticas',
     group: 'ops',
-    icon: 'dashboard',
+    icon: 'looks_one',
     name: 'aritmethic',
     items: [
       { name: 'sum', title: 'Soma' },
@@ -15,7 +15,7 @@ const Menu =  [
   {
     title: 'Lógicas',
     group: 'ops',
-    icon: 'chat_bubble',
+    icon: 'looks_two',
     name: 'logical',
     items: [
       { name: 'and', title: 'E' },

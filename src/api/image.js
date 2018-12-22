@@ -1,53 +1,53 @@
 const Image = function (data) {
-		
+	/* eslint-disable */	
     let exp = /^(\S+)\s+(#.*?\n)*\s*(\d+)\s+(\d+)\s+(\d+)?\s*/,
         match = data.match (exp);
-
     if (match) {
         let width = this.width = parseInt (match[3], 10),
             height = this.height = parseInt (match[4], 10),
             maxVal = parseInt (match[5], 10),
             bytes = (maxVal < 256)? 1 : 2,
-            data = data.substr (match[0].length);
-
+            dat = data.substr (match[0].length);
         switch (match[1]) {
             
             case 'P1':
-                this._parser = new ASCIIParser (maxVal + ' ' + data, bytes);
+                this._parser = new ASCIIParser (maxVal + ' ' + dat, bytes);
                 this._formatter = new PBMFormatter (width, height);
                 break;
 
             case 'P2':
-                this._parser = new ASCIIParser (data, bytes);
+                this._parser = new ASCIIParser (dat, bytes);
                 this._formatter = new PGMFormatter (width, height, maxVal);
                 break;
 
             case 'P3':
-                this._parser = new ASCIIParser (data, bytes);
+                this._parser = new ASCIIParser (dat, bytes);
                 this._formatter = new PPMFormatter (width, height, maxVal);
                 break;
 
             case 'P4':
-                this._parser = new BinaryParser (data, bytes);
+                this._parser = new BinaryParser (dat, bytes);
                 this._formatter = new PBMFormatter (width, height);
                 break;
 
             case 'P5':
-                this._parser = new BinaryParser (data, bytes);
+                this._parser = new BinaryParser (dat, bytes);
                 this._formatter = new PGMFormatter (width, height, maxVal);
                 break;
 
             case 'P6':
-                this._parser = new BinaryParser (data, bytes);
+                this._parser = new BinaryParser (dat, bytes);
                 this._formatter = new PPMFormatter (width, height, maxVal);
                 break;
             
             default:
-                throw new TypeError ('Sorry, your file format is not supported. [' + match[1] + ']');
+                // throw new TypeError ('Sorry, your file format is not supported. [' + match[1] + ']');
+                return false;
         }
         
     } else {			
-        throw new TypeError ('Sorry, file does not appear to be a Netpbm file.');
+        // throw new TypeError ('Sorry, file does not appear to be a Netpbm file.');
+        return false;
     }
 };
 
@@ -135,9 +135,8 @@ const PGMFormatter = function (width, height, maxVal) {
 };
 
 
-PGMFormatter.prototype.getCanvas = function (parser) {
-    var canvas = document.createElement ('canvas'),
-        ctx = canvas.getContext ('2d'),
+PGMFormatter.prototype.getCanvas = function (parser, canvas) {
+    var ctx = canvas.getContext ('2d'),
         img;
         
     canvas.width = ctx.width = this._width;
@@ -158,8 +157,7 @@ PGMFormatter.prototype.getCanvas = function (parser) {
         }	
     }
 
-    ctx.putImageData (img, 0, 0);
-    return canvas;
+    ctx.putImageData (img, 10, 10);
 };
 
 
