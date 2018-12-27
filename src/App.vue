@@ -12,7 +12,6 @@
           <span class="caption mr-1">Made With Love </span> <v-icon color="pink" small>favorite</v-icon>
         </v-footer>
     </v-content>
-    <!-- <app-fab></app-fab> -->
   </v-app>
 </template>
 
