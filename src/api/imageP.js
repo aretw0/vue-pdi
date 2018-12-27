@@ -1,13 +1,16 @@
-const Image = function (data) {
+const ImageP = function (data) {
 	/* eslint-disable */	
     let exp = /^(\S+)\s+(#.*?\n)*\s*(\d+)\s+(\d+)\s+(\d+)?\s*/,
         match = data.match (exp);
+        // console.log(data);
     if (match) {
         let width = this.width = parseInt (match[3], 10),
             height = this.height = parseInt (match[4], 10),
             maxVal = parseInt (match[5], 10),
             bytes = (maxVal < 256)? 1 : 2,
             dat = data.substr (match[0].length);
+            this.type = match[1];
+            // console.log(this.type);
         switch (match[1]) {
             
             case 'P1':
@@ -42,12 +45,12 @@ const Image = function (data) {
             
             default:
                 // throw new TypeError ('Sorry, your file format is not supported. [' + match[1] + ']');
-                return false;
+                this.notP = true;
         }
         
     } else {			
         // throw new TypeError ('Sorry, file does not appear to be a Netpbm file.');
-        return false;
+        this.notP = true;
     }
 };
 
@@ -95,15 +98,10 @@ const PPMFormatter = function (width, height, maxVal) {
 };
 
 
-PPMFormatter.prototype.getCanvas = function (parser) {
-    var canvas = document.createElement ('canvas'),
-        ctx = canvas.getContext ('2d'),
-        img;
-        
-    canvas.width = ctx.width = this._width;
-    canvas.height = ctx.height = this._height;
+PPMFormatter.prototype.getCanvas = function (parser, ctx) {
+    var img;
 
-    img = ctx.getImageData (0, 0, this._width, this._height);
+    img = ctx.createImageData(this._width, this._height);
     
     for (var row = 0; row < this._height; row++) {
         for (var col = 0; col < this._width; col++) {
@@ -120,9 +118,7 @@ PPMFormatter.prototype.getCanvas = function (parser) {
             img.data[pos + 3] = 255;
         }	
     }
-
-    ctx.putImageData (img, 0, 0);
-    return canvas;
+    return img;
 };
 
 
@@ -135,14 +131,10 @@ const PGMFormatter = function (width, height, maxVal) {
 };
 
 
-PGMFormatter.prototype.getCanvas = function (parser, canvas) {
-    var ctx = canvas.getContext ('2d'),
-        img;
-        
-    canvas.width = ctx.width = this._width;
-    canvas.height = ctx.height = this._height;
+PGMFormatter.prototype.getImageData = function (parser, ctx) {
+    var img;
 
-    img = ctx.getImageData (0, 0, this._width, this._height);
+    img = ctx.createImageData(this._width, this._height);
     
     for (var row = 0; row < this._height; row++) {
         for (var col = 0; col < this._width; col++) {
@@ -156,8 +148,7 @@ PGMFormatter.prototype.getCanvas = function (parser, canvas) {
             img.data[pos + 3] = 255;
         }	
     }
-
-    ctx.putImageData (img, 10, 10);
+    return img;
 };
 
 
@@ -167,10 +158,8 @@ const PBMFormatter = function (width, height) {
 };
 
 
-PBMFormatter.prototype.getCanvas = function (parser) {
-    var canvas = document.createElement ('canvas'),
-        ctx = canvas.getContext ('2d'),
-        img;
+PBMFormatter.prototype.getCanvas = function (parser, ctx) {
+    var img;
     
     if (parser instanceof BinaryParser) {
         var data = '',
@@ -191,11 +180,9 @@ PBMFormatter.prototype.getCanvas = function (parser) {
 
         parser = new ASCIIParser (data.split ('').join (' '), 1);
     }
-    
-    canvas.width = ctx.width = this._width;
-    canvas.height = ctx.height = this._height;
 
-    img = ctx.getImageData (0, 0, this._width, this._height);
+
+    img = ctx.createImageData(this._width, this._height);
 
     for (var row = 0; row < this._height; row++) {
         for (var col = 0; col < this._width; col++) {
@@ -209,8 +196,7 @@ PBMFormatter.prototype.getCanvas = function (parser) {
         }	
     }
 
-    ctx.putImageData (img, 0, 0);
-    return canvas;
+    return img;
 };
 
-export default Image;
+export default ImageP;
