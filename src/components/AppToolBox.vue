@@ -14,7 +14,7 @@
           X: {{info.x}} / Y: {{info.y}} - RGBA({{info.r}},{{info.g}},{{info.b}},{{info.a}}) <span :style="info.bgc">C</span>
         </v-card-text>
         <v-card-actions>
-          <v-btn flat color="orange" @click="resetCtrl()">Resetar controles</v-btn>
+          <v-btn flat color="orange" @click="resetCtrl(true)">Resetar controles</v-btn>
           <v-btn flat color="red" @click="eraseAll()">Apagar tudo</v-btn>
         </v-card-actions>
       </v-card>
@@ -22,13 +22,13 @@
     <v-snackbar
         v-model="snackbar.show"
         :multi-line="true"
-        :right="true"
-        :timeout="1800"
+        :timeout="1750"
         :top="true"
+        :color="snackbar.color"
       >
         {{ snackbar.text }}
         <v-btn
-          color="blue"
+          color="white"
           flat
           @click="snackbar.show = false"
         >
@@ -67,7 +67,8 @@ import Utils from '@/api/utils';
       },
       snackbar: {
         show: false,
-        text: ''
+        text: '',
+        color: 'success'
       },
       imgSrc: null
     }),
@@ -97,8 +98,9 @@ import Utils from '@/api/utils';
               // a forma de por
               vm.cvArea.children[0].appendChild(canvas);
               vm.cvs++;
-
+              vm.snackbar.show = false; 
               vm.snackbar.text = "Imagem carregada!";
+              vm.snackbar.color = "success";
               vm.snackbar.show = true;
 
             } else {
@@ -123,7 +125,9 @@ import Utils from '@/api/utils';
         // a forma de por
         this.cvArea.children[0].appendChild(canvas);
         this.cvs++;
+        this.snackbar.show = false; 
         this.snackbar.text = "Imagem carregada!";
+        this.snackbar.color = "success";
         this.snackbar.show = true;
       },
       moveEv (ev) {
@@ -152,34 +156,91 @@ import Utils from '@/api/utils';
         switch(this.lastSelected) {
           case 1:
             // lembrar de retirar estilos de quem deixou de ser
+            if (this.secondaryImg.selected) {
+              // se ja foi selecionado
+              // this.secondaryImg.el
+              this.secondaryImg.el.classList.remove("c2");
+            }
+            ev.target.classList.add("c2");
             this.secondaryImg.el = ev.target;
             this.secondaryImg.selected = true;
             this.lastSelected = 0;
+            this.snackbar.text = "Opção secundária selecionada!";
+            this.snackbar.color = "red";
+            this.snackbar.show = true;
           break;
           default:
            // lembrar de retirar estilos de quem deixou de ser
+           if (this.primaryImg.selected) {
+              // se ja foi selecionado
+              this.primaryImg.el.classList.remove("c1");
+            }
+            ev.target.classList.add("c1");
             this.primaryImg.el = ev.target;
             this.primaryImg.selected = true;
             this.lastSelected = 1;
+            this.snackbar.show = false; 
+            this.snackbar.text = "Opção primária selecionada!";
+            this.snackbar.color = "blue";
+            this.snackbar.show = true;
           break;
         }
       },
       clickEv (ev) {
         if (ev.ctrlKey) {
           // a forma de tirar
+          if (this.secondaryImg.selected) {
+            if (ev.target == this.secondaryImg.el) {
+              console.log("Igual a secundário!");
+              delete this.secondaryImg.el
+              this.secondaryImg.selected = false;
+              this.lastSelected =  1;
+            }
+          }
+
+          if (this.primaryImg.selected) {
+            if (ev.target == this.primaryImg.el) {
+              console.log("Igual a primário!")
+              delete this.primaryImg.el
+              this.primaryImg.selected = false;
+              this.lastSelected = 0;
+            }
+          }
           this.cvArea.children[0].removeChild(ev.target);
           --this.cvs;
         }
       },
-      resetCtrl () {
+      resetCtrl (info) {
         console.log("resetCtrl");
+        if (this.primaryImg.selected) {
+          this.primaryImg.el.classList.remove("c1");
+          delete this.primaryImg.el;
+          this.primaryImg.selected = false;
+        }
+        if (this.secondaryImg.selected) {
+          this.secondaryImg.el.classList.remove("c2");
+          delete this.secondaryImg.el;
+          this.secondaryImg.selected = false;
+        }
+        this.lastSelected = 0;
+        if (info) {
+          this.snackbar.show = false; 
+          this.snackbar.text = "Opções resetadas";
+          this.snackbar.color = "black";
+          this.snackbar.show = true; 
+        }
       },
       eraseAll () {
+        this.resetCtrl(false);
         while (this.cvArea.children[0].hasChildNodes()) {
           // a forma de tirar
             this.cvArea.children[0].removeChild(this.cvArea.children[0].lastChild);
         }
         this.cvs = 0;
+        this.snackbar.show = false; 
+        this.snackbar.text = "Área de trabalho limpa!";
+        this.snackbar.color = "black";
+        this.snackbar.show = true; 
       }
     }
   }
@@ -188,5 +249,20 @@ import Utils from '@/api/utils';
 <style>
   canvas {
     margin: 10px;
+    border: solid white;
+  }
+  .c1 {
+    /*border: solid blue; */
+    border-left: solid blue !important;
+    border-top: solid blue !important;
+    border-bottom: solid blue;
+    border-right: solid blue;
+  }
+  .c2 {
+    /*border: solid red;*/
+    border-left: solid red;
+    border-top: solid red;
+    border-bottom: solid red !important;
+    border-right: solid red !important;
   }
 </style>
