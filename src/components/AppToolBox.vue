@@ -293,7 +293,7 @@ import Utils from '@/api/utils';
           // console.log(vm.transArea.width,vm.transArea.height);
           // console.log(ctx.width,ctx.height);
 
-          ctx.drawImage( vm.primaryImg.el, 0, 0);
+          ctx.drawImage( vm.primaryImg.el, (ctx.width-vm.primaryImg.el.width)/2, (ctx.height-vm.primaryImg.el.height)/2);
         },1500);
 
       },
