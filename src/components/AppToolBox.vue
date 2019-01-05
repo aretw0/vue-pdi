@@ -16,9 +16,40 @@
         <v-card-actions>
           <v-btn flat color="orange" @click="resetCtrl(true)">Resetar controles</v-btn>
           <v-btn flat color="red" @click="eraseAll()">Apagar tudo</v-btn>
+          <v-btn flat v-if="primaryImg.selected" color="dark" @click="callDialog()">Transformadas</v-btn>
         </v-card-actions>
       </v-card>
     </v-flex>
+    <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
+        <v-card width="100%" height="100%">
+          <v-toolbar dark>
+            <v-btn icon dark @click="closeDialog()">
+              <v-icon>close</v-icon>
+            </v-btn>
+            <v-toolbar-title>Transformadas</v-toolbar-title>
+          </v-toolbar>
+            <v-layout justify-end fill-height id="wbTrans">
+              <v-card flat id="transArea">
+                <canvas id="trans"></canvas>
+              </v-card>
+                <v-card flat color="dark">
+                  <v-card-text>
+                    <v-container grid-list-md>
+                      <v-layout wrap>
+                        <v-flex xs12>
+                          <v-text-field label="Email*" required></v-text-field>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-text-field label="Password*" type="password" required></v-text-field>
+                        </v-flex>
+                      </v-layout>
+                    </v-container>
+                    <small>*indicates required field</small>
+                  </v-card-text>
+                </v-card>
+            </v-layout>
+        </v-card>
+      </v-dialog>
     <v-snackbar
         v-model="snackbar.show"
         :multi-line="true"
@@ -47,6 +78,7 @@ import Utils from '@/api/utils';
   export default {
     name: "app-toolbox",
     data: () => ({
+      transArea: {},
       cvArea: {},
       cvs: 0,
       info: {
@@ -65,6 +97,7 @@ import Utils from '@/api/utils';
       secondaryImg: {
         selected: false
       },
+      dialog: false,
       snackbar: {
         show: false,
         text: '',
@@ -112,7 +145,9 @@ import Utils from '@/api/utils';
     },
     mounted () {
       this.cvArea = document.getElementById("cvArea");
-      // console.log(this.cvArea);
+      this.transArea = document.getElementById("trans");
+
+      // console.log(this.transArea);
     },
     methods: {
       imageLoaded (e) {
@@ -241,6 +276,43 @@ import Utils from '@/api/utils';
         this.snackbar.text = "Área de trabalho limpa!";
         this.snackbar.color = "black";
         this.snackbar.show = true; 
+      },
+      callDialog () {
+        console.log("Chamando Dialog");
+        this.dialog = true;
+        var vm = this;
+
+        setTimeout (function() {
+          console.log("1,5 segundos depois");
+          let ctx = vm.transArea.getContext('2d');
+
+          vm.transArea.width = ctx.width = vm.transArea.offsetWidth;
+          vm.transArea.height = ctx.height = vm.transArea.offsetHeight;
+
+          // console.log(vm.transArea.offsetWidth,vm.transArea.offsetHeight);
+          // console.log(vm.transArea.width,vm.transArea.height);
+          // console.log(ctx.width,ctx.height);
+
+          ctx.drawImage( vm.primaryImg.el, (ctx.width-vm.primaryImg.el.width)/2, (ctx.height-vm.primaryImg.el.height)/2);
+        },1500);
+
+      },
+      closeDialog () {
+        console.log("Fechando Dialog");
+
+        let context = this.transArea.getContext('2d'); 
+
+        // Store the current transformation matrix
+        // context.save();
+
+        // Use the identity matrix while clearing the canvas
+        // context.setTransform(1, 0, 0, 1, 0, 0);
+        context.clearRect(0, 0, this.transArea.width, this.transArea.height);
+
+        // Restore the transform
+        // context.restore();
+
+        this.dialog = false;
       }
     }
   }
@@ -250,6 +322,20 @@ import Utils from '@/api/utils';
   canvas {
     margin: 10px;
     border: solid white;
+  }
+  #trans {
+    display: block;
+    margin: 0px;
+    border: 0px;
+    width: 100%;
+    height: 100%;
+  }
+  #transArea {
+    width: 100%;
+    height: 100%;
+  }
+  #wbTrans {
+    height: 630px;
   }
   .c1 {
     /*border: solid blue; */
