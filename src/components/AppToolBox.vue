@@ -109,6 +109,234 @@ import Utils from '@/api/utils';
       console.log(cv ? 'OpenCV is available here!' : 'Uh oh..');      
       window.getApp.$on('APP_TB', (op) => {
         console.log("APP_TB: ",op);
+
+        // nesse momento fazemos as operações
+        switch(op) {
+          case 'sum': 
+            console.log("Operação de soma");
+            if  (this.primaryImg.selected && this.secondaryImg.selected) {
+              console.log("Imagens selecionadas! É possível realizar a operação");
+              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+              
+              let primData = Utils.getImageData(this.primaryImg.el);
+              let seconData = Utils.getImageData(this.secondaryImg.el);
+
+              // let prim = cv.imread(this.primaryImg.el);
+              // let secon = cv.imread(this.secondaryImg.el);
+              // let third = new cv.Mat();
+              // cv.add(prim,secon,third);
+              let imgData = Utils.addImageData(canvas,primData,seconData)
+
+              // console.log(prim.data,secon.data,third.data);
+              // console.log(primData,seconData,imgData); 
+
+              // cv.imshow(canvas,third);
+              // prim.delete();
+              // secon.delete();
+              // third.delete();
+              Utils.putImageData(canvas,imgData);
+
+              // console.log(Utils.getImageData(canvas));              
+              this.pushCanvas(canvas);
+              this.pushMessage("Operação concluída",'success');
+            } else {
+              this.pushMessage("Selecione duas imagens!","alert");
+            }
+          break;
+          case 'minus': 
+            console.log("Operação de subtração");
+            if  (this.primaryImg.selected && this.secondaryImg.selected) {
+              console.log("Imagens selecionadas! É possível realizar a operação");
+              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+
+              let primData = Utils.getImageData(this.primaryImg.el);
+              let seconData = Utils.getImageData(this.secondaryImg.el);
+
+              // descomente para mostrar "efeito" opencvjs
+              // let prim = cv.imread(this.primaryImg.el);
+              // let secon = cv.imread(this.secondaryImg.el);
+              // let third = new cv.Mat();
+              // cv.subtract(prim,secon,third);
+              let imgData = Utils.subImageData(canvas,primData,seconData)
+              
+              // console.log(prim.data,secon.data,third.data);
+              // console.log(primData,seconData,imgData);    
+              
+              // descomente para mostrar "efeito" opencvjs
+              // cv.imshow(canvas,third);
+              // prim.delete();
+              // secon.delete();
+              // third.delete();
+              Utils.putImageData(canvas,imgData);
+
+              // console.log(Utils.getImageData(canvas));              
+              this.pushCanvas(canvas);
+              this.pushMessage("Operação concluída",'success');
+
+            } else {
+              this.pushMessage("Selecione duas imagens!","alert");
+            }
+          break;
+          case 'multi': 
+            console.log("Operação de Multiplicação");
+            if  (this.primaryImg.selected && this.secondaryImg.selected) {
+              console.log("Imagens selecionadas! É possível realizar a operação");
+              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+              
+              let primData = Utils.getImageData(this.primaryImg.el);
+              let seconData = Utils.getImageData(this.secondaryImg.el);
+
+              // descomente para mostrar "efeito" opencvjs
+              // let prim = cv.imread(this.primaryImg.el);
+              // let secon = cv.imread(this.secondaryImg.el);
+              // let third = new cv.Mat();
+              // cv.multiply(prim,secon,third);
+              let imgData = Utils.multImageData(canvas,primData,seconData)
+              
+              // console.log(prim.data,secon.data,third.data);
+              // console.log(primData,seconData,imgData);    
+              
+              // descomente para mostrar "efeito" opencvjs
+              // cv.imshow(canvas,third);
+              // prim.delete();
+              // secon.delete();
+              // third.delete();
+              Utils.putImageData(canvas,imgData);
+
+              // console.log(Utils.getImageData(canvas));              
+              this.pushCanvas(canvas);
+              this.pushMessage("Operação concluída",'success');
+            } else {
+              this.pushMessage("Selecione duas imagens!","alert");
+            }
+          break;
+          case 'divis': 
+            console.log("Operação de divisão");
+            if  (this.primaryImg.selected && this.secondaryImg.selected) {
+              console.log("Imagens selecionadas! É possível realizar a operação");
+              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+              
+              let primData = Utils.getImageData(this.primaryImg.el);
+              let seconData = Utils.getImageData(this.secondaryImg.el);
+
+              // descomente para mostrar "efeito" opencvjs
+              // let prim = cv.imread(this.primaryImg.el);
+              // let secon = cv.imread(this.secondaryImg.el);
+              // let third = new cv.Mat();
+              // cv.divide(prim,secon,third);
+              let imgData = Utils.divImageData(canvas,primData,seconData)
+              
+              // console.log(prim.data,secon.data,third.data);
+              // console.log(primData,seconData,imgData);    
+              
+              // descomente para mostrar "efeito" opencvjs
+              // cv.imshow(canvas,third);
+              // prim.delete();
+              // secon.delete();
+              // third.delete();
+              Utils.putImageData(canvas,imgData);
+
+              // console.log(Utils.getImageData(canvas));              
+              this.pushCanvas(canvas);
+              this.pushMessage("Operação concluída",'success');
+            } else {
+              this.pushMessage("Selecione duas imagens!","alert");
+            }
+          break;
+          case 'and':
+            console.log("Operação de AND");
+            if  (this.primaryImg.selected && this.secondaryImg.selected) {
+              console.log("Imagens selecionadas! É possível realizar a operação");
+              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+              
+              let primData = Utils.getImageData(this.primaryImg.el);
+              let seconData = Utils.getImageData(this.secondaryImg.el);
+
+              // let prim = cv.imread(this.primaryImg.el);
+              // let secon = cv.imread(this.secondaryImg.el);
+              // let third = new cv.Mat();
+              // cv.bitwise_and(prim,secon,third);
+              let imgData = Utils.andImageData(canvas,primData,seconData)
+
+              // console.log(prim.data,secon.data,third.data);
+              // console.log(primData,seconData,imgData); 
+
+              // cv.imshow(canvas,third);
+              // prim.delete();
+              // secon.delete();
+              // third.delete();
+              Utils.putImageData(canvas,imgData);
+
+              // console.log(Utils.getImageData(canvas));              
+              this.pushCanvas(canvas);
+              this.pushMessage("Operação concluída",'success');
+            } else {
+              this.pushMessage("Selecione duas imagens!","alert");
+            }
+          break;
+          case 'or':
+          console.log("Operação de OR");
+            if  (this.primaryImg.selected && this.secondaryImg.selected) {
+              console.log("Imagens selecionadas! É possível realizar a operação");
+              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+              
+              let primData = Utils.getImageData(this.primaryImg.el);
+              let seconData = Utils.getImageData(this.secondaryImg.el);
+
+              // let prim = cv.imread(this.primaryImg.el);
+              // let secon = cv.imread(this.secondaryImg.el);
+              // let third = new cv.Mat();
+              // cv.bitwise_or(prim,secon,third);
+              let imgData = Utils.orImageData(canvas,primData,seconData)
+
+              // console.log(prim.data,secon.data,third.data);
+              // console.log(primData,seconData,imgData); 
+
+              // cv.imshow(canvas,third);
+              // prim.delete();
+              // secon.delete();
+              // third.delete();
+              Utils.putImageData(canvas,imgData);
+
+              // console.log(Utils.getImageData(canvas));              
+              this.pushCanvas(canvas);
+              this.pushMessage("Operação concluída",'success');
+            } else {
+              this.pushMessage("Selecione duas imagens!","alert");
+            }
+          break;
+          case 'xor':
+          console.log("Operação de XOR");
+            if  (this.primaryImg.selected && this.secondaryImg.selected) {
+              console.log("Imagens selecionadas! É possível realizar a operação");
+              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+              
+              let primData = Utils.getImageData(this.primaryImg.el);
+              let seconData = Utils.getImageData(this.secondaryImg.el);
+
+              // let prim = cv.imread(this.primaryImg.el);
+              // let secon = cv.imread(this.secondaryImg.el);
+              // let third = new cv.Mat();
+              // cv.bitwise_xor(prim,secon,third);
+              let imgData = Utils.xorImageData(canvas,primData,seconData)
+
+              // console.log(prim.data,secon.data,third.data);
+              // console.log(primData,seconData,imgData); 
+
+              // cv.imshow(canvas,third);
+              // prim.delete();
+              // secon.delete();
+              // third.delete();
+              Utils.putImageData(canvas,imgData);
+
+              // console.log(Utils.getImageData(canvas));              
+              this.pushCanvas(canvas);
+              this.pushMessage("Operação concluída",'success');
+            } else {
+              this.pushMessage("Selecione duas imagens!","alert");
+            }
+          break;
+        }
       });
       window.getApp.$on('APP_UPLOAD', (image) => {
         // console.log(image);
@@ -129,13 +357,8 @@ import Utils from '@/api/utils';
               ctx.putImageData(img.data,0,0);
 
               // a forma de por
-              vm.cvArea.children[0].appendChild(canvas);
-              vm.cvs++;
-              vm.snackbar.show = false; 
-              vm.snackbar.text = "Imagem carregada!";
-              vm.snackbar.color = "success";
-              vm.snackbar.show = true;
-
+              vm.pushCanvas(canvas);
+              vm.pushMessage("Imagem carregada!","success");
             } else {
               document.getElementById("imgLoad").src = URL.createObjectURL(image);
             }
@@ -150,6 +373,17 @@ import Utils from '@/api/utils';
       // console.log(this.transArea);
     },
     methods: {
+      pushMessage (msg,type) {
+        this.snackbar.show = false; 
+        this.snackbar.text = msg;
+        this.snackbar.color = type;
+        this.snackbar.show = true;
+      },
+      pushCanvas (canvas) {
+        // a forma de por
+        this.cvArea.children[0].appendChild(canvas);
+        this.cvs++;
+      },
       imageLoaded (e) {
         // console.log("Image carregada", e.target.result);
         let mat = cv.imread(e.target);
@@ -158,12 +392,8 @@ import Utils from '@/api/utils';
         mat.delete();
 
         // a forma de por
-        this.cvArea.children[0].appendChild(canvas);
-        this.cvs++;
-        this.snackbar.show = false; 
-        this.snackbar.text = "Imagem carregada!";
-        this.snackbar.color = "success";
-        this.snackbar.show = true;
+        this.pushCanvas(canvas);
+        this.pushMessage("Imagem carregada!","success");
       },
       moveEv (ev) {
         // console.log(ev);
@@ -187,7 +417,7 @@ import Utils from '@/api/utils';
         this.info.bgc = "background-color: rgb("+this.info.r+","+this.info.g+","+this.info.b+");"
       },
       dblclickEv (ev) {
-        console.log(ev);
+        // console.log(ev);
         switch(this.lastSelected) {
           case 1:
             // lembrar de retirar estilos de quem deixou de ser
@@ -200,9 +430,7 @@ import Utils from '@/api/utils';
             this.secondaryImg.el = ev.target;
             this.secondaryImg.selected = true;
             this.lastSelected = 0;
-            this.snackbar.text = "Opção secundária selecionada!";
-            this.snackbar.color = "red";
-            this.snackbar.show = true;
+            this.pushMessage("Opção secundária selecionada!","red");
           break;
           default:
            // lembrar de retirar estilos de quem deixou de ser
@@ -214,10 +442,7 @@ import Utils from '@/api/utils';
             this.primaryImg.el = ev.target;
             this.primaryImg.selected = true;
             this.lastSelected = 1;
-            this.snackbar.show = false; 
-            this.snackbar.text = "Opção primária selecionada!";
-            this.snackbar.color = "blue";
-            this.snackbar.show = true;
+            this.pushMessage("Opção primária selecionada!","blue");
           break;
         }
       },
@@ -259,10 +484,7 @@ import Utils from '@/api/utils';
         }
         this.lastSelected = 0;
         if (info) {
-          this.snackbar.show = false; 
-          this.snackbar.text = "Opções resetadas";
-          this.snackbar.color = "black";
-          this.snackbar.show = true; 
+         this.pushMessage("Opções resetadas","black");
         }
       },
       eraseAll () {
@@ -272,10 +494,7 @@ import Utils from '@/api/utils';
             this.cvArea.children[0].removeChild(this.cvArea.children[0].lastChild);
         }
         this.cvs = 0;
-        this.snackbar.show = false; 
-        this.snackbar.text = "Área de trabalho limpa!";
-        this.snackbar.color = "black";
-        this.snackbar.show = true; 
+        this.pushMessage("Área de trabalho limpa!","black");
       },
       callDialog () {
         console.log("Chamando Dialog");
