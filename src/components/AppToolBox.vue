@@ -336,6 +336,32 @@ import Utils from '@/api/utils';
               this.pushMessage("Selecione duas imagens!","alert");
             }
           break;
+          case 'rgb':
+          console.log("Operação de Componentes RGB");
+            if  (this.primaryImg.selected) {
+              console.log("Imagem selecionada! É possível realizar a operação");
+              let canvas = {
+                cR: Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]),
+                cG: Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]),
+                cB: Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv])
+              };
+              
+              let primData = Utils.getImageData(this.primaryImg.el);
+
+              let compData = Utils.rgbImageData(canvas.cR,primData);
+     
+              Utils.putImageData(canvas.cR,compData.r);
+              Utils.putImageData(canvas.cG,compData.g);
+              Utils.putImageData(canvas.cB,compData.b);
+           
+              this.pushCanvas(canvas.cR);
+              this.pushCanvas(canvas.cG);
+              this.pushCanvas(canvas.cB);
+              this.pushMessage("Operação concluída",'success');
+            } else {
+              this.pushMessage("Selecione uma imagem primária","alert");
+            }
+          break;
         }
       });
       window.getApp.$on('APP_UPLOAD', (image) => {

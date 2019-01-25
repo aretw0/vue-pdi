@@ -22,6 +22,18 @@ const Menu =  [
       { name: 'or', title: 'Ou' },
       { name: 'xor', title: 'XOu' }
     ]
+  },
+  { header: 'Componentes' },
+  {
+    title: 'Espaço de cores',
+    icon: 'looks',
+    name: 'colorsspace',
+    items: [
+      { name: 'rgb', title: 'RGB' },
+      { name: 'hsb', title: 'HSB' },
+      { name: 'yuv', title: 'YUV' },
+      { name: 'cmyk', title: 'CMYK' }
+    ]
   }/* ,
   {
     title: 'Widgets',

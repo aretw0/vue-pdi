@@ -113,6 +113,34 @@ const Utils = {
             }	
         }
         return out;
+    },
+    rgbImageData (cv,inp) {
+        let comp = {
+            r: cv.getContext('2d').createImageData(inp.width, inp.height),
+            g: cv.getContext('2d').createImageData(inp.width, inp.height),
+            b: cv.getContext('2d').createImageData(inp.width, inp.height)
+        };
+        for (var row = 0; row < inp.height; row++) {
+            for (var col = 0; col < inp.width; col++) {
+                var pos = (row * inp.width + col) * 4;
+
+                comp.r.data[pos] = inp.data[pos];
+                comp.r.data[pos + 1] = 0;
+                comp.r.data[pos + 2] = 0;
+                comp.r.data[pos + 3] = 255;       
+
+                comp.g.data[pos] = 0;
+                comp.g.data[pos + 1] = inp.data[pos + 1]; 
+                comp.g.data[pos + 2] = 0;
+                comp.g.data[pos + 3] = 255;
+
+                comp.b.data[pos] = 0;
+                comp.b.data[pos + 1] = 0; 
+                comp.b.data[pos + 2] = inp.data[pos + 2];
+                comp.b.data[pos + 3] = 255;
+            }	
+        }
+        return comp;
     }
 }
 
