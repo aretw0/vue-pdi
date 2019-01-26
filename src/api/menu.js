@@ -9,7 +9,7 @@ const Menu =  [
       { name: 'sum', title: 'Soma' },
       { name: 'minus', title: 'Subtração' },
       { name: 'multi', title: 'Multiplicação' },
-      { name: 'divis', title: 'Divisão'}
+      { name: 'divid', title: 'Divisão'}
     ]
   },
   {
