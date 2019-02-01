@@ -1,40 +1,60 @@
 const Menu =  [
-  { header: 'Operações' },
   {
-    title: 'Aritméticas',
+    title: 'Operações',
     group: 'ops',
-    icon: 'looks_one',
-    name: 'aritmethic',
+    icon: 'compare',
+    name: 'operations',
     items: [
-      { name: 'sum', title: 'Soma' },
-      { name: 'minus', title: 'Subtração' },
-      { name: 'multi', title: 'Multiplicação' },
-      { name: 'divid', title: 'Divisão'}
+      {
+        title: 'Aritméticas',
+        name: 'arith',
+        group: 'arith',
+        items: true,
+        children: [
+          { name: 'sum', title: 'Soma' },
+          { name: 'minus', title: 'Subtração' },
+          { name: 'multi', title: 'Multiplicação' },
+          { name: 'divid', title: 'Divisão'}
+        ]
+      },
+      {
+        title: 'Lógicas',
+        name: 'logical',
+        group: 'logical',
+        items: true,
+        children: [
+          { name: 'and', title: 'E' },
+          { name: 'or', title: 'Ou' },
+          { name: 'xor', title: 'XOu' }
+        ]
+      }
     ]
   },
+  { divider: true },
   {
-    title: 'Lógicas',
-    group: 'ops',
-    icon: 'looks_two',
-    name: 'logical',
-    items: [
-      { name: 'and', title: 'E' },
-      { name: 'or', title: 'Ou' },
-      { name: 'xor', title: 'XOu' }
-    ]
-  },
-  { header: 'Componentes' },
-  {
-    title: 'Espaço de cores',
-    icon: 'looks',
+    title: 'Componentes',
+    icon: 'style',
     name: 'colorsspace',
+    // chip: 'Cor',
     items: [
       { name: 'rgb', title: 'RGB' },
       { name: 'hsb', title: 'HSB' },
-      { name: 'yuv', title: 'YUV' },
+      { name: 'yuvhd', title: 'YUV HD' },
+      { name: 'yuvsd', title: 'YUV SD' },
       { name: 'cmyk', title: 'CMYK' }
     ]
-  }/* ,
+  },
+  { divider: true },
+  {
+    title: 'Pseudocolorização',
+    icon: 'brush',
+    name: 'pseudocolor',
+    items: [
+      { name: 'fatia51', title: 'Fatiamento 51', chip: 'P&B' },
+      { name: 'redis', title: 'Redistribuição', chip: 'Cor', color: 'orange' },
+    ]
+  }
+  /* ,
   {
     title: 'Widgets',
     group: 'widgets',

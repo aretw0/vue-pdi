@@ -40,14 +40,34 @@
                     <v-container grid-list-md>
                       <v-layout wrap>
                         <v-flex xs12>
-                          <v-text-field label="Email*" required></v-text-field>
+                          <v-subheader class="pl-0">Rotação</v-subheader>
+                          <v-slider
+                          
+                            always-dirty
+                            persistent-hint
+                            thumb-label="always"
+                          ></v-slider>
                         </v-flex>
                         <v-flex xs12>
-                          <v-text-field label="Password*" type="password" required></v-text-field>
+                          <v-subheader class="pl-0">Tranlação X</v-subheader>
+                          <v-slider
+                            
+                            always-dirty
+                            persistent-hint
+                            thumb-label="always"
+                          ></v-slider>
+                        </v-flex>
+                        <v-flex xs12>
+                          <v-subheader class="pl-0">Tranlação Y</v-subheader>
+                          <v-slider
+                            
+                            always-dirty
+                            persistent-hint
+                            thumb-label="always"
+                          ></v-slider>
                         </v-flex>
                       </v-layout>
                     </v-container>
-                    <small>*indicates required field</small>
                   </v-card-text>
                 </v-card>
             </v-layout>
@@ -135,27 +155,41 @@ import Utils from '@/api/utils';
             }
           break;
           case 'rgb':
-          console.log("Operação de Componentes RGB");
+          case 'cmyk':
+          case 'hsb':
+          case 'yuvsd':
+          case 'yuvhd':
+          console.log("Operação de Componentes");
             if  (this.primaryImg.selected) {
               console.log("Imagem selecionada! É possível realizar a operação");
-              let canvas = {
-                cR: Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]),
-                cG: Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]),
-                cB: Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv])
-              };
               
               let primData = Utils.getImageData(this.primaryImg.el);
 
-              let compData = Utils.rgbImageData(canvas.cR,primData);
-     
-              Utils.putImageData(canvas.cR,compData.r);
-              Utils.putImageData(canvas.cG,compData.g);
-              Utils.putImageData(canvas.cB,compData.b);
-           
-              this.pushCanvas(canvas.cR);
-              this.pushCanvas(canvas.cG);
-              this.pushCanvas(canvas.cB);
+              let compData = Utils.cmpImageData(op,canvas,primData);
+              Utils.putImageData(canvas,imgData);             
+              this.pushCanvas(canvas);
               this.pushMessage("Operação concluída",'success');
+
+            } else {
+              this.pushMessage("Selecione uma imagem primária","alert");
+            }
+          break;
+          case 'fatia51':
+          case 'redis':
+            console.log("Operação de Pseudocolorização");
+            if  (this.primaryImg.selected) {
+              console.log("Imagem selecionada! É possível realizar a operação");
+              
+              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+
+              let primData = Utils.getImageData(this.primaryImg.el);
+
+              let imgData = Utils.colorImageData(op,canvas,primData);
+
+              Utils.putImageData(canvas,imgData);             
+              this.pushCanvas(canvas);
+              this.pushMessage("Operação concluída",'success');
+
             } else {
               this.pushMessage("Selecione uma imagem primária","alert");
             }

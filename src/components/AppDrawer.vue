@@ -23,44 +23,50 @@
                 <v-list-tile-content>
                   <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                 </v-list-tile-content>
+                <v-chip class="caption blue lighten-2 white--text mx-0" v-if="item.chip" :color="item.color" label="label" small>{{ item.chip }}</v-chip>
               </v-list-tile>
               <template v-for="(subItem, i) in item.items">
                 <!--sub group-->
-                <v-list-group v-if="subItem.items" :key="subItem.name" :group="subItem.group" sub-group="sub-group">
+                <v-list-group v-if="subItem.items" :key="subItem.name" :group="subItem.group" :prepend-icon="subItem.icon" sub-group="sub-group">
                   <v-list-tile slot="activator" ripple="ripple">
                     <v-list-tile-content>
                       <v-list-tile-title>{{ subItem.title }}</v-list-tile-title>
                     </v-list-tile-content>
+                    <v-chip class="caption blue lighten-2 white--text mx-0" v-if="subItem.chip" :color="subItem.color" label="label" small>{{ subItem.chip }}</v-chip>
                   </v-list-tile>
-                  <v-list-tile v-for="(grand, i) in subItem.children" :key="i" ripple="ripple">
+                  <v-list-tile v-for="(grand, i) in subItem.children" :key="i" ripple="ripple" @click="emitOp(grand.name)">
+                    <v-list-tile-action v-if="grand.icon">
+                      <v-icon>{{ grand.icon }}</v-icon>
+                    </v-list-tile-action>
                     <v-list-tile-content>
                       <v-list-tile-title>{{ grand.title }}</v-list-tile-title>
                     </v-list-tile-content>
+                    <v-chip class="caption blue lighten-2 white--text mx-0" v-if="grand.chip" :color="grand.color" label="label" small>{{ grand.chip }}</v-chip>
                   </v-list-tile>
                 </v-list-group>
                 <!--child item-->
                 <v-list-tile v-else :key="i" :disabled="subItem.disabled" ripple="ripple" @click="emitOp(subItem.name)">
+                  <v-list-tile-action v-if="subItem.icon">
+                    <v-icon>{{ subItem.icon }}</v-icon>
+                  </v-list-tile-action>
                   <v-list-tile-content>
                     <v-list-tile-title><span>{{ subItem.title }}</span></v-list-tile-title>
                   </v-list-tile-content>
+                  <v-chip class="caption blue lighten-2 white--text mx-0" v-if="subItem.chip" :color="subItem.color" label="label" small>{{ subItem.chip }}</v-chip>
                 </v-list-tile>
               </template>
             </v-list-group>
             <v-subheader v-else-if="item.header" :key="i">{{ item.header }}</v-subheader>
             <v-divider v-else-if="item.divider" :key="i"></v-divider>
             <!--top-level link-->
-            <v-list-tile v-else ripple="ripple" :disabled="item.disabled" rel="noopener" :key="item.name">
+            <v-list-tile v-else ripple="ripple" :disabled="item.disabled" rel="noopener" :key="item.name" @click="emitOp(item.name)">
               <v-list-tile-action v-if="item.icon">
                 <v-icon>{{ item.icon }}</v-icon>
               </v-list-tile-action>
               <v-list-tile-content>
                 <v-list-tile-title>{{ item.title }}</v-list-tile-title>
               </v-list-tile-content>
-              <!-- <v-circle class="white--text pa-0 chip--x-small" v-if="item.badge" :color="item.color || 'primary'" disabled="disabled">{{ item.badge }}</v-circle> -->
-              <v-list-tile-action v-if="item.subAction">
-                <v-icon class="success--text">{{ item.subAction }}</v-icon>
-              </v-list-tile-action>
-              <!-- <v-circle class="caption blue lighten-2 white--text mx-0" v-else-if="item.chip" label="label" small="small">{{ item.chip }}</v-circle> -->
+              <v-chip class="caption blue lighten-2 white--text mx-0" v-if="item.chip" :color="item.color" label="label" small>{{ item.chip }}</v-chip>
             </v-list-tile>
         </template>
       </v-list>        
