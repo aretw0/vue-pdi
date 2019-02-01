@@ -308,6 +308,9 @@ const Utils = {
     },
     colorImageData (op,cv,inp) {
         let out = cv.getContext('2d').createImageData(inp.width, inp.height);
+        let min = Math.ceil(0);
+        let max = Math.floor(2);
+        let rnd = Math.floor(Math.random() * (max - min + 1)) + min;
 
         for (let row = 0; row < inp.height; row++) {
             for (let col = 0; col < inp.width; col++) {
@@ -316,21 +319,17 @@ const Utils = {
                 switch(op) {
                     case 'redis':
                     {
-                        let min = Math.ceil(0);
-                        let max = Math.floor(2);
-                        let rnd = Math.floor(Math.random() * (max - min + 1)) + min;
-
                         out.data[pos] = inp.data[pos + rnd];
                         out.data[pos + 1] = inp.data[pos + Math.abs(1 - rnd)];
-                        out.data[pos + 2] = inp.data[pos + 2 - rnd];
+                        out.data[pos + 2] = inp.data[pos + 2 - (rnd == 1 ? 0 : rnd)];
                     }
                     break;
                     case 'fatia51':
                     {
                         let cMax = Math.max(inp.data[pos + 1],inp.data[pos + 2],inp.data[pos]);
-                        // let cMin = Math.min(inp.data[pos + 1],inp.data[pos + 2],inp.data[pos]);
-                        // let delta = (cMax - cMin) == 0 ? cMax : (cMax - cMin);
-                        let delta = cMax;
+                        let cMin = Math.min(inp.data[pos + 1],inp.data[pos + 2],inp.data[pos]);
+                        let delta = (cMax - cMin) == 0 ? cMax : (cMax - cMin);
+                        // let delta = cMax;
                         let r = 255, g = 255, b = 255;
                         if (delta >= 0 && delta < 51) {
                             r = 102, g = 51, b = 0;

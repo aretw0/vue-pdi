@@ -42,7 +42,9 @@
                         <v-flex xs12>
                           <v-subheader class="pl-0">Rotação</v-subheader>
                           <v-slider
-                          
+                            v-model="transOp.r"
+                            :max="transOp.rTotal"
+                            :min="-transOp.rTotal"
                             always-dirty
                             persistent-hint
                             thumb-label="always"
@@ -51,7 +53,9 @@
                         <v-flex xs12>
                           <v-subheader class="pl-0">Tranlação X</v-subheader>
                           <v-slider
-                            
+                            v-model="transOp.tX"
+                            :max="transOp.tMax"
+                            :min="transOp.tMin"
                             always-dirty
                             persistent-hint
                             thumb-label="always"
@@ -60,7 +64,9 @@
                         <v-flex xs12>
                           <v-subheader class="pl-0">Tranlação Y</v-subheader>
                           <v-slider
-                            
+                            v-model="transOp.tY"
+                            :max="transOp.tMax"
+                            :min="transOp.tMin"
                             always-dirty
                             persistent-hint
                             thumb-label="always"
@@ -99,6 +105,15 @@ import Utils from '@/api/utils';
   export default {
     name: "app-toolbox",
     data: () => ({
+      dialog: false,
+      transOp:{
+        rTotal: 360,
+        r: 0,
+        tMax: 100,
+        tMin: -100,
+        tY: 0,
+        tX: 0
+      },
       transArea: {},
       cvArea: {},
       cvs: 0,
@@ -118,7 +133,6 @@ import Utils from '@/api/utils';
       secondaryImg: {
         selected: false
       },
-      dialog: false,
       normalize: false,
       snackbar: {
         show: false,
@@ -162,12 +176,16 @@ import Utils from '@/api/utils';
           console.log("Operação de Componentes");
             if  (this.primaryImg.selected) {
               console.log("Imagem selecionada! É possível realizar a operação");
-              
               let primData = Utils.getImageData(this.primaryImg.el);
-
-              let compData = Utils.cmpImageData(op,canvas,primData);
-              Utils.putImageData(canvas,imgData);             
-              this.pushCanvas(canvas);
+              let compData = Utils.cmpImageData(op,Utils.createCanvas(),primData);           
+              for (const key in compData) {
+                    if (compData.hasOwnProperty(key)) {
+                        console.log(key);
+                        let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
+                        Utils.putImageData(canvas,compData[key]);
+                        this.pushCanvas(canvas);
+                    }
+                }
               this.pushMessage("Operação concluída",'success');
 
             } else {
