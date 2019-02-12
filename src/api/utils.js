@@ -202,7 +202,7 @@ const Utils = {
                             b: cMax
                         };
 
-                        /* if (delta === 0) {
+                        if (delta === 0) {
                             nComp.h = 0;
                         } else if (cMax === rL) {
                             nComp.h = 60 * (((gL - bL) / delta) + 0);
@@ -210,46 +210,25 @@ const Utils = {
                             nComp.h = 60 * (((bL - rL) / delta) + 2);
                         } else if (cMax === bL) {
                             nComp.h = 60 * (((rL - gL) / delta) + 4);
-                        } */
-                        
-                        nComp.h = (nComp.h > 0 ? nComp.h : (2 * Math.PI + nComp.h)) * 360 / (2 * Math.PI);
-
-                        // let C = nComp.b * nComp.s;
-                        let C = nComp.b * 0;
-                        let X = C * (1 - Math.abs((0 / 60) % 2 - 1));
-                        let m = nComp.b - C;
-
-                        if (nComp >= 0 && nComp < 60) {
-                            rL = C, gL = X, bL = 0;
-                        } else if (nComp >= 60 && nComp < 120) {
-                            rL = C, gL = X, bL = 0;
-                        } else if (nComp >= 120 && nComp < 180) {
-                            rL = X, gL = C, bL = 0;
-                        } else if (nComp >= 180 && nComp < 240) {
-                            rL = 0, gL = C, bL = X;
-                        } else if (nComp >= 240 && nComp < 300) {
-                            rL = X, gL = 0, bL = C;
-                        } else if (nComp >= 300 && nComp < 360) {
-                            rL = C, gL = 0, bL = X;
                         }
                         
-                        let nRGB = {
-                            r: (rL+m)*255,
-                            g: ((gL+m)*255),
-                            b: ((bL+m)*255)
-                        }
+                        nComp.h = (nComp.h >= 0 ? nComp.h : (2 * Math.PI + nComp.h)) * 360 / (2 * Math.PI);
 
-                        comp.h.data[pos] = 0;
-                        comp.h.data[pos + 1] = 0;
-                        comp.h.data[pos + 2] = 0;
+                        let hScale = scale_n(nComp.h,0,360,0,255);
+                        let sScale = scale_n(nComp.s,0,1,0,255);
+                        let bScale = scale_n(nComp.b,0,1,0,255);
 
-                        comp.s.data[pos] = 0;
-                        comp.s.data[pos + 1] = 0;
-                        comp.s.data[pos + 2] = 0;
+                        comp.h.data[pos] = hScale;
+                        comp.h.data[pos + 1] = hScale;
+                        comp.h.data[pos + 2] = hScale;
 
-                        comp.b.data[pos] = nRGB.r;
-                        comp.b.data[pos + 1] = nRGB.g;
-                        comp.b.data[pos + 2] = nRGB.b;
+                        comp.s.data[pos] = sScale;
+                        comp.s.data[pos + 1] = sScale;
+                        comp.s.data[pos + 2] = sScale;
+
+                        comp.b.data[pos] = bScale;
+                        comp.b.data[pos + 1] = bScale;
+                        comp.b.data[pos + 2] = bScale;
 
                     }
                     break;
@@ -308,9 +287,7 @@ const Utils = {
     },
     colorImageData (op,cv,inp) {
         let out = cv.getContext('2d').createImageData(inp.width, inp.height);
-        let min = Math.ceil(0);
-        let max = Math.floor(2);
-        let rnd = Math.floor(Math.random() * (max - min + 1)) + min;
+        
 
         for (let row = 0; row < inp.height; row++) {
             for (let col = 0; col < inp.width; col++) {
@@ -319,6 +296,10 @@ const Utils = {
                 switch(op) {
                     case 'redis':
                     {
+                        let min = Math.ceil(0);
+                        let max = Math.floor(2);
+                        let rnd = Math.floor(Math.random() * (max - min + 1)) + min;
+                        
                         out.data[pos] = inp.data[pos + rnd];
                         out.data[pos + 1] = inp.data[pos + Math.abs(1 - rnd)];
                         out.data[pos + 2] = inp.data[pos + 2 - (rnd == 1 ? 0 : rnd)];
@@ -338,9 +319,9 @@ const Utils = {
                         } else if (delta >= 102 && delta < 153) {
                             r = 204, g = 153, b = 102;
                         } else if (delta >= 153 && delta < 204) {
-                            r = 255, g = 204, b = 153;
+                            r = 155, g = 204, b = 153;
                         } else if (delta >= 204 && delta <= 255) {
-                            r = 255, g = 255, b = 204;
+                            r = 55, g = 255, b = 204;
                         }
                         out.data[pos] = r;
                         out.data[pos + 1] = g;
@@ -357,6 +338,10 @@ const Utils = {
         return out;
 
     }
+}
+
+function scale_n(num, in_min, in_max, out_min, out_max) {
+    return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 export default Utils;
