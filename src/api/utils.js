@@ -1,4 +1,30 @@
 const Utils = {
+    drawImageDialog (cv,img) {
+        let ctx = cv.getContext('2d');
+
+          cv.width = ctx.width = cv.offsetWidth;
+          cv.height = ctx.height = cv.offsetHeight;
+
+          // console.log(cv.offsetWidth,cv.offsetHeight);
+          // console.log(cv.width,cv.height);
+          // console.log(ctx.width,ctx.height);
+
+          ctx.drawImage( img, Math.floor((ctx.width-img.width)/2), Math.floor((ctx.height-img.height)/2));
+    },
+    clearCanvas (cv) {
+        let context = cv.getContext('2d'); 
+
+        // Store the current transformation matrix
+        // context.save();
+
+        // Use the identity matrix while clearing the canvas
+        // context.setTransform(1, 0, 0, 1, 0, 0);
+        context.clearRect(0, 0, cv.width, cv.height);
+
+        // Restore the transform
+        // context.restore();
+
+    },
     createCanvas (evs) {
         var canvas = document.createElement('canvas');
         if (evs) {
