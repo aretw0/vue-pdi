@@ -2,14 +2,16 @@
   <v-app>
     <app-drawer/>     
     <app-toolbar/>
-    <v-content>
+    <v-content id="main">
       <!-- <HelloWorld/> -->
       <app-tool-box/>
        <!-- App Footer -->
-        <v-footer height="auto" class="white pa-3 app--footer">
-          <span class="caption">Aretw0 Development &copy; {{ new Date().getFullYear() }}</span>
+        <v-footer height="auto" class="white pa-3 app--footer transparent">
+          <span class="caption">&copy; {{ new Date().getFullYear() }}</span>
           <v-spacer></v-spacer>
-          <span class="caption mr-1">Made With Love </span> <v-icon color="pink" small>favorite</v-icon>
+          <span class="caption mr-1">Feito com</span>
+          <v-icon color="pink" small>favorite</v-icon>
+          <span class="caption mr-1">  por <a href="https://github.com/aretw0">aretw0</a></span>
         </v-footer>
     </v-content>
   </v-app>
@@ -37,3 +39,10 @@ export default {
   }
 }
 </script>
+
+<style>
+  #main {
+    background-color: darkgray;
+  }
+</style>
+

@@ -1,15 +1,13 @@
+import ImageP from '@/api/imageP';
+
 const Utils = {
-    drawImageDialog (cv,img) {
-        let ctx = cv.getContext('2d');
+    drawImageDialog (cv, img) {
+        let ctx = cv.getContext('2d'); 
 
-          cv.width = ctx.width = cv.offsetWidth;
-          cv.height = ctx.height = cv.offsetHeight;
+        cv.width = ctx.width = img.width;
+        cv.height = ctx.height = img.height;
 
-          // console.log(cv.offsetWidth,cv.offsetHeight);
-          // console.log(cv.width,cv.height);
-          // console.log(ctx.width,ctx.height);
-
-          ctx.drawImage( img, Math.floor((ctx.width-img.width)/2), Math.floor((ctx.height-img.height)/2));
+        ctx.drawImage( img, 0,0);
     },
     clearCanvas (cv) {
         let context = cv.getContext('2d'); 
@@ -24,6 +22,17 @@ const Utils = {
         // Restore the transform
         // context.restore();
 
+    },
+    transformCanvas(cv,transOp, img) {
+        this.clearCanvas(cv);
+        let ctx = cv.getContext('2d');
+        ctx.save();
+        // translate
+        ctx.translate(transOp.tX,transOp.tY);
+        // ctx.scale(transOp.sX, transOp.sY);
+        // ctx.rotate(transOp.r * transOp.rad);
+        this.drawImageDialog(ctx,transOp,img);
+        ctx.restore();
     },
     createCanvas (evs) {
         var canvas = document.createElement('canvas');
@@ -42,6 +51,94 @@ const Utils = {
         cv.width = ctx.width = imgData.width;
         cv.height = ctx.height = imgData.height;
         ctx.putImageData(imgData,0,0);
+    },
+    imageUpload(image, vue) {
+        const reader = new FileReader();
+        var vm = vue;
+         reader.onload = function(e) {
+           let img = new ImageP(window.atob(e.target.result.split(',')[1]));
+           if (!img.notP) {
+             let canvas = Utils.createCanvas([vm.moveEv,vm.clickEv,vm.dblclickEv]);
+             let ctx = canvas.getContext('2d');
+
+             img.data = img._formatter.getImageData(img._parser,ctx);
+
+             canvas.width = ctx.width = img.width;
+             canvas.height = ctx.height = img.height;
+
+             ctx.putImageData(img.data,0,0);
+
+             // a forma de por
+             vm.pushCanvas(canvas);
+             vm.pushMessage("Imagem carregada!","success");
+           } else {
+             document.getElementById("imgLoad").src = URL.createObjectURL(image);
+           }
+         };
+         reader.readAsDataURL(image);
+    },
+    menuOp (op,vue) {
+        // nesse momento fazemos as operações
+        switch(op) {
+            case 'sum': 
+            case 'minus': 
+            case 'multi': 
+            case 'divid': 
+            case 'and':
+            case 'or':
+            case 'xor':
+              if  (vue.primaryImg.selected && vue.secondaryImg.selected) {
+                let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                let primData = this.getImageData(vue.primaryImg.el);
+                let seconData = this.getImageData(vue.secondaryImg.el);
+                let imgData = this.opImageData(op,canvas,primData,seconData,vue.normalize);
+                this.putImageData(canvas,imgData);             
+                vue.pushCanvas(canvas);
+                vue.pushMessage("Operação concluída",'success');
+              } else {
+                vue.pushMessage("Selecione duas imagens!","alert");
+              }
+            break;
+            case 'rgb':
+            case 'cmyk':
+            case 'hsb':
+            case 'yuvsd':
+            case 'yuvhd':
+              if  (vue.primaryImg.selected) {
+                let primData = this.getImageData(vue.primaryImg.el);
+                let compData = this.cmpImageData(op,this.createCanvas(),primData);           
+                for (const key in compData) {
+                      if (compData.hasOwnProperty(key)) {
+                          let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                          this.putImageData(canvas,compData[key]);
+                          vue.pushCanvas(canvas);
+                      }
+                  }
+                vue.pushMessage("Operação concluída",'success');
+  
+              } else {
+                vue.pushMessage("Selecione uma imagem primária","alert");
+              }
+            break;
+            case 'fatia51':
+            case 'redis':
+              if  (vue.primaryImg.selected) {
+                
+                let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+  
+                let primData = this.getImageData(vue.primaryImg.el);
+  
+                let imgData = this.colorImageData(op,canvas,primData);
+  
+                this.putImageData(canvas,imgData);             
+                vue.pushCanvas(canvas);
+                vue.pushMessage("Operação concluída",'success');
+  
+              } else {
+                vue.pushMessage("Selecione uma imagem primária","alert");
+              }
+            break;
+          }
     },
     opImageData(op,cv,in1,in2,norm) {
 

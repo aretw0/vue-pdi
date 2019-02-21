@@ -1,7 +1,7 @@
 <template>
  <v-layout>
     <v-flex>
-      <v-card>
+      <v-card id="wb">
         <v-card-title primary-title>
           <div>
             <h3 class="headline mb-0">Canvas</h3>
@@ -32,50 +32,93 @@
             <v-toolbar-title>Transformadas</v-toolbar-title>
           </v-toolbar>
             <v-layout justify-end fill-height id="wbTrans">
-              <v-card flat id="transArea">
-                <canvas id="trans"></canvas>
+              <v-card flat id="area" xs8>
+                <div id="reflex" :style="styleReflex">
+                  <canvas id="trans" :style="styleTrans"></canvas>
+                </div>
               </v-card>
-                <v-card flat color="dark">
-                  <v-card-text>
-                    <v-container grid-list-md>
-                      <v-layout wrap>
-                        <v-flex xs12>
-                          <v-subheader class="pl-0">Rotação</v-subheader>
-                          <v-slider
-                            v-model="transOp.r"
-                            :max="transOp.rTotal"
-                            :min="-transOp.rTotal"
-                            always-dirty
-                            persistent-hint
-                            thumb-label="always"
-                          ></v-slider>
-                        </v-flex>
-                        <v-flex xs12>
-                          <v-subheader class="pl-0">Tranlação X</v-subheader>
-                          <v-slider
-                            v-model="transOp.tX"
-                            :max="transOp.tMax"
-                            :min="transOp.tMin"
-                            always-dirty
-                            persistent-hint
-                            thumb-label="always"
-                          ></v-slider>
-                        </v-flex>
-                        <v-flex xs12>
-                          <v-subheader class="pl-0">Tranlação Y</v-subheader>
-                          <v-slider
-                            v-model="transOp.tY"
-                            :max="transOp.tMax"
-                            :min="transOp.tMin"
-                            always-dirty
-                            persistent-hint
-                            thumb-label="always"
-                          ></v-slider>
-                        </v-flex>
-                      </v-layout>
-                    </v-container>
-                  </v-card-text>
-                </v-card>
+              <v-card flat color="dark" xs4 id="transCtrls">
+                <v-card-text>
+                  <v-container grid-list-md>
+                    <v-layout wrap>
+                      <v-flex xs12>
+                        <v-subheader class="pl-0">Rotação</v-subheader>
+                        <v-slider
+                          v-model="transOp.r"
+                          :max="transOp.rTotal"
+                          :min="-transOp.rTotal"
+                          thumb-label="always"
+                        ></v-slider>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-subheader class="pl-0">Tranlação X</v-subheader>
+                        <v-slider
+                          v-model="transOp.tX"
+                          :max="transOp.tTotal"
+                          :min="-transOp.tTotal"
+                          thumb-label="always"
+                        ></v-slider>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-subheader class="pl-0">Tranlação Y</v-subheader>
+                        <v-slider
+                          v-model="transOp.tY"
+                          :max="transOp.tTotal"
+                          :min="-transOp.tTotal"
+                          thumb-label="always"
+                        ></v-slider>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-subheader class="pl-0">Escala X</v-subheader>
+                        <v-slider
+                          v-model="transOp.sX"
+                          step=".1"
+                          :max="transOp.sTotal"
+                          :min="-transOp.sTotal"
+                          thumb-label="always"
+                        ></v-slider>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-subheader class="pl-0">Escala Y</v-subheader>
+                        <v-slider
+                          v-model="transOp.sY"
+                          step=".1"
+                          :max="transOp.sTotal"
+                          :min="-transOp.sTotal"
+                          thumb-label="always"
+                        ></v-slider>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-subheader class="pl-0">Cisalhamento X</v-subheader>
+                        <v-slider
+                          v-model="transOp.cX"
+                          :max="transOp.cTotal"
+                          :min="-transOp.cTotal"
+                          thumb-label="always"
+                        ></v-slider>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-subheader class="pl-0">Cisalhamento Y</v-subheader>
+                        <v-slider
+                          v-model="transOp.cY"
+                          :max="transOp.cTotal"
+                          :min="-transOp.cTotal"
+                          thumb-label="always"
+                        ></v-slider>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-subheader class="pl-0">Reflexão</v-subheader>
+                        <v-btn flat color="black" @click="transOp.rX = !transOp.rX">Reflexão X</v-btn>
+                        <v-btn flat color="black" @click="transOp.rY = !transOp.rY">Reflexão Y</v-btn>
+                        <v-subheader class="pl-0">Resetar Valores</v-subheader>
+                      </v-flex>
+                      <v-flex xs12>       
+                        <v-btn flat color="black" @click="resetTransf()">Resetar Valores</v-btn>
+                      </v-flex>
+                    </v-layout>
+                  </v-container>
+                </v-card-text>
+              </v-card>
             </v-layout>
         </v-card>
       </v-dialog>
@@ -99,7 +142,6 @@
 
 <script>
 import cv from "openCV";
-import ImageP from '@/api/imageP';
 import Utils from '@/api/utils';
 /* eslint-disable */
   export default {
@@ -109,13 +151,21 @@ import Utils from '@/api/utils';
       transOp:{
         rTotal: 360,
         r: 0,
-        tMax: 100,
-        tMin: -100,
+        tTotal: 250,
         tY: 0,
-        tX: 0
+        tX: 0,
+        sTotal: 3,
+        sY: 1,
+        sX: 1,
+        cTotal: 50,
+        cX: 0,
+        cY: 0,
+        rY: false,
+        rX: false
       },
       transArea: {},
       cvArea: {},
+      area: {},
       cvs: 0,
       info: {
         x: 0,
@@ -144,108 +194,17 @@ import Utils from '@/api/utils';
     created () {
       console.log(cv ? 'OpenCV is available here!' : 'Uh oh..');      
       window.getApp.$on('APP_TB', (op) => {
-        console.log("APP_TB: ",op);
-
-        // nesse momento fazemos as operações
-        switch(op) {
-          case 'sum': 
-          case 'minus': 
-          case 'multi': 
-          case 'divid': 
-          case 'and':
-          case 'or':
-          case 'xor':
-            if  (this.primaryImg.selected && this.secondaryImg.selected) {
-              console.log("Imagens selecionadas! É possível realizar a operação");
-              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
-              let primData = Utils.getImageData(this.primaryImg.el);
-              let seconData = Utils.getImageData(this.secondaryImg.el);
-              let imgData = Utils.opImageData(op,canvas,primData,seconData,this.normalize);
-              Utils.putImageData(canvas,imgData);             
-              this.pushCanvas(canvas);
-              this.pushMessage("Operação concluída",'success');
-            } else {
-              this.pushMessage("Selecione duas imagens!","alert");
-            }
-          break;
-          case 'rgb':
-          case 'cmyk':
-          case 'hsb':
-          case 'yuvsd':
-          case 'yuvhd':
-          console.log("Operação de Componentes");
-            if  (this.primaryImg.selected) {
-              console.log("Imagem selecionada! É possível realizar a operação");
-              let primData = Utils.getImageData(this.primaryImg.el);
-              let compData = Utils.cmpImageData(op,Utils.createCanvas(),primData);           
-              for (const key in compData) {
-                    if (compData.hasOwnProperty(key)) {
-                        console.log(key);
-                        let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
-                        Utils.putImageData(canvas,compData[key]);
-                        this.pushCanvas(canvas);
-                    }
-                }
-              this.pushMessage("Operação concluída",'success');
-
-            } else {
-              this.pushMessage("Selecione uma imagem primária","alert");
-            }
-          break;
-          case 'fatia51':
-          case 'redis':
-            console.log("Operação de Pseudocolorização");
-            if  (this.primaryImg.selected) {
-              console.log("Imagem selecionada! É possível realizar a operação");
-              
-              let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
-
-              let primData = Utils.getImageData(this.primaryImg.el);
-
-              let imgData = Utils.colorImageData(op,canvas,primData);
-
-              Utils.putImageData(canvas,imgData);             
-              this.pushCanvas(canvas);
-              this.pushMessage("Operação concluída",'success');
-
-            } else {
-              this.pushMessage("Selecione uma imagem primária","alert");
-            }
-          break;
-        }
+        Utils.menuOp(op,this);
       });
       window.getApp.$on('APP_UPLOAD', (image) => {
         // console.log(image);
-        const reader = new FileReader();
-         var vm = this;
-          reader.onload = function(e) {
-            let img = new ImageP(window.atob(e.target.result.split(',')[1]));;
-            if (!img.notP) {
-              let index = vm.cvs.length
-              let canvas = Utils.createCanvas([vm.moveEv,vm.clickEv,vm.dblclickEv]);
-              let ctx = canvas.getContext('2d');
-
-              img.data = img._formatter.getImageData(img._parser,ctx);
-
-              canvas.width = ctx.width = img.width;
-              canvas.height = ctx.height = img.height;
-
-              ctx.putImageData(img.data,0,0);
-
-              // a forma de por
-              vm.pushCanvas(canvas);
-              vm.pushMessage("Imagem carregada!","success");
-            } else {
-              document.getElementById("imgLoad").src = URL.createObjectURL(image);
-            }
-          };
-          reader.readAsDataURL(image);
+        Utils.imageUpload(image, this);
       });
     },
     mounted () {
       this.cvArea = document.getElementById("cvArea");
       this.transArea = document.getElementById("trans");
-
+      this.area = document.getElementById("area");
       // console.log(this.transArea);
     },
     methods: {
@@ -376,38 +335,58 @@ import Utils from '@/api/utils';
         console.log("Chamando Dialog");
         this.dialog = true;
         var vm = this;
+        var area = this.area;
 
         setTimeout (function() {
           console.log("1,5 segundos depois");
-          let ctx = vm.transArea.getContext('2d');
+         area.style.padding = (Math.abs((area.clientHeight/2)-vm.primaryImg.el.height)) + "px 0px";
+          Utils.drawImageDialog(vm.transArea,vm.primaryImg.el);
 
-          vm.transArea.width = ctx.width = vm.transArea.offsetWidth;
-          vm.transArea.height = ctx.height = vm.transArea.offsetHeight;
-
-          // console.log(vm.transArea.offsetWidth,vm.transArea.offsetHeight);
-          // console.log(vm.transArea.width,vm.transArea.height);
-          // console.log(ctx.width,ctx.height);
-
-          ctx.drawImage( vm.primaryImg.el, (ctx.width-vm.primaryImg.el.width)/2, (ctx.height-vm.primaryImg.el.height)/2);
         },1500);
 
       },
       closeDialog () {
         console.log("Fechando Dialog");
-
-        let context = this.transArea.getContext('2d'); 
-
-        // Store the current transformation matrix
-        // context.save();
-
-        // Use the identity matrix while clearing the canvas
-        // context.setTransform(1, 0, 0, 1, 0, 0);
-        context.clearRect(0, 0, this.transArea.width, this.transArea.height);
-
-        // Restore the transform
-        // context.restore();
-
+        Utils.clearCanvas(this.transArea);
+       
         this.dialog = false;
+      },
+      resetTransf () {
+         this.transOp.r = 0;
+         this.transOp.tY = 0;
+         this.transOp.tX = 0;
+         this.transOp.sY = 1;
+         this.transOp.sX = 1;
+         this.transOp.cX = 0;
+         this.transOp.cY = 0;
+         this.transOp.rX = false;
+         this.transOp.rY = false;
+      }
+    },
+    computed: {
+      styleReflex() {
+
+        let translate = 'translate(';
+        let scale = 'scale('
+
+        translate += (this.transOp.rY ? -300 : 0) +  'px,';
+
+        translate += (this.transOp.rX ? 300 : 0) + 'px)';
+
+        scale += (this.transOp.rY ? -1 : 1) + ',';
+        scale += (this.transOp.rX ? -1 : 1) + ')';
+
+        return {
+          transform: translate + ' ' + scale
+        }
+      },
+      styleTrans() {
+        console.log("Computed Style")
+        let rotate = 'rotate(' + this.transOp.r + 'deg)';
+        let translate = 'translate(' + this.transOp.tX + 'px,'+this.transOp.tY+'px)';
+        let scale = 'scale(' + this.transOp.sX + ',' + this.transOp.sY + ')';
+        let skew = 'skew(' + this.transOp.cX + 'deg,' + this.transOp.cY +'deg)';
+        return { transform:  rotate + ' ' +translate + ' ' + scale + ' ' + skew }
       }
     }
   }
@@ -419,18 +398,28 @@ import Utils from '@/api/utils';
     border: solid white;
   }
   #trans {
+    margin: auto;
     display: block;
-    margin: 0px;
-    border: 0px;
-    width: 100%;
-    height: 100%;
   }
   #transArea {
     width: 100%;
-    height: 100%;
+    height: 90%;
+    position: absolute;
+    z-index: 98;
+    overflow: auto;
+  }
+  #transCtrls {
+    overflow-y: auto;
+    /* position: absolute; */
+    width: 300px;
+    z-index: 99;
+    background-color: transparent;
   }
   #wbTrans {
     height: 630px;
+  }
+  #wb {
+    background-color: dimgray;
   }
   .c1 {
     /*border: solid blue; */
