@@ -141,6 +141,7 @@
 </template>
 
 <script>
+import webglUtils from "webglUtils";
 import cv from "openCV";
 import Utils from '@/api/utils';
 /* eslint-disable */
@@ -192,7 +193,8 @@ import Utils from '@/api/utils';
       imgSrc: null
     }),
     created () {
-      console.log(cv ? 'OpenCV is available here!' : 'Uh oh..');      
+      console.log(cv ? 'OpenCV is available here!' : 'Uh oh..');
+      console.log(webglUtils ? 'webglUtils is available here!' : 'Uh oh..');      
       window.getApp.$on('APP_TB', (op) => {
         Utils.menuOp(op,this);
       });
