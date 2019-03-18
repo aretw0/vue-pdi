@@ -136,12 +136,10 @@
           Fechar
         </v-btn>
       </v-snackbar>
-      <img @load="imageLoaded($event)" id="imgLoad" alt="Upload" style="display: none;"/>
   </v-layout>
 </template>
 
 <script>
-import webglUtils from "webglUtils";
 import cv from "openCV";
 import Utils from '@/api/utils';
 /* eslint-disable */
@@ -193,13 +191,12 @@ import Utils from '@/api/utils';
       imgSrc: null
     }),
     created () {
-      console.log(cv ? 'OpenCV is available here!' : 'Uh oh..');
-      console.log(webglUtils ? 'webglUtils is available here!' : 'Uh oh..');      
+      console.log(cv ? 'OpenCV is available here!' : 'Uh oh..'); 
       window.getApp.$on('APP_TB', (op) => {
         Utils.menuOp(op,this);
       });
       window.getApp.$on('APP_UPLOAD', (image) => {
-        // console.log(image);
+        console.log(image);
         Utils.imageUpload(image, this);
       });
     },
@@ -222,15 +219,7 @@ import Utils from '@/api/utils';
         this.cvs++;
       },
       imageLoaded (e) {
-        // console.log("Image carregada", e.target.result);
-        let mat = cv.imread(e.target);
-        let canvas = Utils.createCanvas([this.moveEv,this.clickEv,this.dblclickEv]);
-        cv.imshow(canvas, mat);
-        mat.delete();
-
-        // a forma de por
-        this.pushCanvas(canvas);
-        this.pushMessage("Imagem carregada!","success");
+       
       },
       moveEv (ev) {
         // console.log(ev);

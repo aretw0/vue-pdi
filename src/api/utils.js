@@ -1,5 +1,9 @@
 import ImageP from '@/api/imageP';
+import webglUtils from "webglUtils";
+import Shaders from '@/api/shaders';
+import Kernels from '@/api/kernels';
 
+/* eslint-disable */
 const Utils = {
     drawImageDialog (cv, img) {
         let ctx = cv.getContext('2d'); 
@@ -46,6 +50,9 @@ const Utils = {
     getImageData(cv) {
         return cv.getContext('2d').getImageData(0,0, cv.width,cv.height);
     },
+    renderImage() {
+
+    },
     putImageData(cv,imgData) {
         let ctx =  cv.getContext('2d');
         cv.width = ctx.width = imgData.width;
@@ -72,7 +79,19 @@ const Utils = {
              vm.pushCanvas(canvas);
              vm.pushMessage("Imagem carregada!","success");
            } else {
-             document.getElementById("imgLoad").src = URL.createObjectURL(image);
+            let loadImg = new Image();
+            loadImg.src = URL.createObjectURL(image);
+            loadImg.onload = function(data) {
+                let canvas = Utils.createCanvas([vm.moveEv,vm.clickEv,vm.dblclickEv]);
+                canvas.width = this.naturalWidth;
+                canvas.height = this.naturalHeight;
+
+                let ctx = canvas.getContext('2d');
+                ctx.drawImage(this, 0, 0);
+                // a forma de por
+                vm.pushCanvas(canvas);
+                vm.pushMessage("Imagem carregada!","success");
+            };
            }
          };
          reader.readAsDataURL(image);
@@ -89,10 +108,10 @@ const Utils = {
             case 'xor':
               if  (vue.primaryImg.selected && vue.secondaryImg.selected) {
                 let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
-                let primData = this.getImageData(vue.primaryImg.el);
-                let seconData = this.getImageData(vue.secondaryImg.el);
-                let imgData = this.opImageData(op,canvas,primData,seconData,vue.normalize);
-                this.putImageData(canvas,imgData);             
+                let primData = vue.primaryImg.el;
+                let seconData = vue.secondaryImg.el;
+                this.opImageData(op,canvas,[primData,seconData],vue.normalize);
+                // this.putImageData(canvas,imgData);             
                 vue.pushCanvas(canvas);
                 vue.pushMessage("Operação concluída",'success');
               } else {
@@ -140,9 +159,141 @@ const Utils = {
             break;
           }
     },
-    opImageData(op,cv,in1,in2,norm) {
+    opImageData(op,cv,images,norm) {
 
-        let out = cv.getContext('2d').createImageData(in1.width, in1.height);
+        let gl = cv.getContext("webgl2");
+        if (!gl) {
+            console.log("Contexto Webgl2 indisponível");
+            return;
+        }
+
+        // setup GLSL program
+        let program = webglUtils.createProgramFromSources(gl,
+        Shaders);
+
+        // look up where the vertex data needs to go.
+        let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+        let texCoordAttributeLocation = gl.getAttribLocation(program, "a_texCoord");
+        
+        // lookup uniforms
+        let resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+        let imageLocation = gl.getUniformLocation(program, "u_image");
+        let kernelLocation = gl.getUniformLocation(program, "u_kernel[0]");
+        let kernelWeightLocation = gl.getUniformLocation(program, "u_kernelWeight");
+
+        // Create a vertex array object (attribute state)
+        let vao = gl.createVertexArray();
+
+        // and make it the one we're currently working with
+        gl.bindVertexArray(vao);
+
+        // Create a buffer and put a single pixel space rectangle in
+        // it (2 triangles)
+        let positionBuffer = gl.createBuffer();
+
+        // Turn on the attribute
+        gl.enableVertexAttribArray(positionAttributeLocation);
+
+        // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+        // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+        let size = 2;          // 2 components per iteration
+        let type = gl.FLOAT;   // the data is 32bit floats
+        let normalize = false; // don't normalize the data
+        let stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        let offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(
+            positionAttributeLocation, size, type, normalize, stride, offset);
+
+        // provide texture coordinates for the rectangle.
+        let texCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            0.0,  0.0,
+            1.0,  0.0,
+            0.0,  1.0,
+            0.0,  1.0,
+            1.0,  0.0,
+            1.0,  1.0,
+        ]), gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(texCoordAttributeLocation);
+        size = 2;          // 2 components per iteration
+        type = gl.FLOAT;   // the data is 32bit floats
+        normalize = false; // don't normalize the data
+        stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+        offset = 0;        // start at the beginning of the buffer
+        gl.vertexAttribPointer(
+            texCoordAttributeLocation, size, type, normalize, stride, offset);
+
+        // Create a texture.
+        let texture = gl.createTexture();
+
+        // make unit 0 the active texture uint
+        // (ie, the unit all other texture commands will affect
+        gl.activeTexture(gl.TEXTURE0 + 0);
+
+        // Bind it to texture unit 0's 2D bind point
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        // Set the parameters so we don't need mips and so we're not filtering
+        // and we don't repeat at the edges.
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+        // Upload the image into the texture.
+        let mipLevel = 0;               // the largest mip
+        let internalFormat = gl.RGBA;   // format we want in the texture
+        let srcFormat = gl.RGBA;        // format of data we are supplying
+        let srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
+        gl.texImage2D(gl.TEXTURE_2D,
+                        mipLevel,
+                        internalFormat,
+                        srcFormat,
+                        srcType,
+                        image);
+
+        // Bind the position buffer so gl.bufferData that will be called
+        // in setRectangle puts data in the position buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+        // Set a rectangle the same size as the image.
+        setRectangle(gl, 0, 0, image.width, image.height);
+
+        webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+
+        // Tell WebGL how to convert from clip space to pixels
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+        // Clear the canvas
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // Tell it to use our program (pair of shaders)
+        gl.useProgram(program);
+
+        // Bind the attribute/buffer set we want.
+        gl.bindVertexArray(vao);
+
+        // Pass in the canvas resolution so we can convert from
+        // pixels to clipspace in the shader
+        gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+
+        // Tell the shader to get the texture from texture unit 0
+        gl.uniform1i(imageLocation, 0);
+
+        // set the kernel and it's weight
+        gl.uniform1fv(kernelLocation, kernels[name]);
+        gl.uniform1f(kernelWeightLocation, computeKernelWeight(kernels[name]));
+
+        // Draw the rectangle.
+        let primitiveType = gl.TRIANGLES;
+        offset = 0;
+        let count = 6;
+        gl.drawArrays(primitiveType, offset, count);
+        /*let out = cv.getContext('2d').createImageData(in1.width, in1.height);
         let res = {
             maxR: 0,
             maxG: 0,
@@ -220,7 +371,7 @@ const Utils = {
                 out.data[pos + 3] = 255;
             }
         }
-        return out;
+        return out;*/
     },
     cmpImageData (op,cv,inp) {
         let comp;
@@ -461,6 +612,21 @@ const Utils = {
         return out;
 
     }
+}
+
+function setRectangle(gl, x, y, width, height) {
+    var x1 = x;
+    var x2 = x + width;
+    var y1 = y;
+    var y2 = y + height;
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+       x1, y1,
+       x2, y1,
+       x1, y2,
+       x1, y2,
+       x2, y1,
+       x2, y2,
+    ]), gl.STATIC_DRAW);
 }
 
 function scale_n(num, in_min, in_max, out_min, out_max) {

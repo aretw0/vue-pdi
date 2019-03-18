@@ -34,15 +34,35 @@
                     </v-list-tile-content>
                     <v-chip class="caption blue lighten-2 white--text mx-0" v-if="subItem.chip" :color="subItem.color" label="label" small>{{ subItem.chip }}</v-chip>
                   </v-list-tile>
-                  <v-list-tile v-for="(grand, i) in subItem.children" :key="i" ripple="ripple" @click="emitOp(grand.name)">
-                    <v-list-tile-action v-if="grand.icon">
-                      <v-icon>{{ grand.icon }}</v-icon>
-                    </v-list-tile-action>
-                    <v-list-tile-content>
-                      <v-list-tile-title>{{ grand.title }}</v-list-tile-title>
-                    </v-list-tile-content>
-                    <v-chip class="caption blue lighten-2 white--text mx-0" v-if="grand.chip" :color="grand.color" label="label" small>{{ grand.chip }}</v-chip>
-                  </v-list-tile>
+                  <template v-for="(grand, k) in subItem.children">
+                    <!-- sub sub group -->
+                    <v-list-group v-if="grand.items" :key="grand.name" :group="grand.group" :prepend-icon="grand.icon" sub-group="grand-group">
+                      <v-list-tile slot="activator" ripple="ripple">
+                        <v-list-tile-content>
+                          <v-list-tile-title>{{ grand.title }}</v-list-tile-title>
+                        </v-list-tile-content>
+                        <v-chip class="caption blue lighten-2 white--text mx-0" v-if="grand.chip" :color="grand.color" label="label" small>{{ grand.chip }}</v-chip>
+                      </v-list-tile>
+                      <v-list-tile v-for="(subGrand, j) in grand.children" :key="j" ripple="ripple" @click="emitOp(subGrand.name)">
+                        <v-list-tile-action v-if="subGrand.icon">
+                          <v-icon>{{ subGrand.icon }}</v-icon>
+                        </v-list-tile-action>
+                        <v-list-tile-content>
+                          <v-list-tile-title>{{ subGrand.title }}</v-list-tile-title>
+                        </v-list-tile-content>
+                        <v-chip class="caption blue lighten-2 white--text mx-0" v-if="subGrand.chip" :color="subGrand.color" label="label" small>{{ subGrand.chip }}</v-chip>
+                      </v-list-tile>
+                    </v-list-group>
+                    <v-list-tile v-else :key="k" :disabled="grand.disabled" ripple="ripple" @click="emitOp(grand.name)">
+                      <v-list-tile-action v-if="grand.icon">
+                        <v-icon>{{ grand.icon }}</v-icon>
+                      </v-list-tile-action>
+                      <v-list-tile-content>
+                        <v-list-tile-title><span>{{ grand.title }}</span></v-list-tile-title>
+                      </v-list-tile-content>
+                      <v-chip class="caption blue lighten-2 white--text mx-0" v-if="grand.chip" :color="grand.color" label="label" small>{{ grand.chip }}</v-chip>
+                    </v-list-tile>
+                  </template>
                 </v-list-group>
                 <!--child item-->
                 <v-list-tile v-else :key="i" :disabled="subItem.disabled" ripple="ripple" @click="emitOp(subItem.name)">
@@ -115,7 +135,7 @@ export default {
 #appDrawer
   overflow: hidden
   .drawer-menu--scroll
-    height: calc(100vh - 48px)
+    height: calc(100vh - 60px)
     overflow: auto
 
 </style>
