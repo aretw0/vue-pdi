@@ -223,25 +223,36 @@ import Utils from '@/api/utils';
        
       },
       moveEv (ev) {
-        console.log(ev);
-        // let position;
-        // let current_left = 0, current_top = 0;
-        // let obj = ev.target;
-        // if (obj.offsetParent){
-        //     do{
-        //         current_left += obj.offsetLeft;
-        //         current_top += obj.offsetTop;
-        //     }while(obj = obj.offsetParent);
-        //     position = {x: current_left, y: current_top};
-        // }
-        // this.info.x = ev.pageX - position.x;
-        // this.info.y = ev.pageY - position.y;
-        // let img =  ev.target.getContext('2d').getImageData(this.info.x,this.info.y,1,1);
-        // this.info.r = img.data[0];
-        // this.info.g = img.data[1];
-        // this.info.b = img.data[2];
-        // this.info.a = img.data[3];
-        // this.info.bgc = "background-color: rgb("+this.info.r+","+this.info.g+","+this.info.b+");"
+        // console.log(ev);
+        let position;
+        let current_left = 0, current_top = 0;
+        let obj = ev.target;
+        if (obj.offsetParent){
+            do{
+                current_left += obj.offsetLeft;
+                current_top += obj.offsetTop;
+            }while(obj = obj.offsetParent);
+            position = {x: current_left, y: current_top};
+        }
+        this.info.x = ev.pageX - position.x;
+        this.info.y = ev.pageY - position.y;
+        let img;
+        let ctx = ev.target.getContext('2d');
+        if (ctx) {
+          img =  ctx.getImageData(this.info.x,this.info.y,1,1).data;
+        } else {
+          console.log("Ctx 2d inacessível");
+          let gl = ev.target.getContext('webgl2');
+          img = new Uint8Array(4);
+          gl.readPixels(this.info.x,this.info.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, img);
+          // console.log(pixels);
+        }
+  
+        this.info.r = img[0];
+        this.info.g = img[1];
+        this.info.b = img[2];
+        this.info.a = img[3];
+        this.info.bgc = "background-color: rgb("+this.info.r+","+this.info.g+","+this.info.b+");"
       },
       dblclickEv (ev) {
         // console.log(ev);

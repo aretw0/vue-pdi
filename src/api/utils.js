@@ -172,7 +172,7 @@ const Utils = {
           }
     },
     convolOpImage(op,cv,image) {
-        let gl = cv.getContext("webgl2");
+        let gl = cv.getContext("webgl2", {preserveDrawingBuffer: true});
         if (!gl) {
             console.log("Contexto Webgl2 indisponível");
             return;
