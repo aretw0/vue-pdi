@@ -65,22 +65,22 @@ const Kernels = {
        -5, 39, -5,
        -5, -5, -5,
     ],
-    sobelHorizontal: [
+    sobelgy: [
         1,  2,  1,
         0,  0,  0,
        -1, -2, -1,
     ],
-    sobelVertical: [
+    sobelgx: [
         1,  0, -1,
         2,  0, -2,
         1,  0, -1,
     ],
-    previtHorizontal: [
+    prewgy: [
         1,  1,  1,
         0,  0,  0,
        -1, -1, -1,
     ],
-    previtVertical: [
+    prewgx: [
         1,  0, -1,
         1,  0, -1,
         1,  0, -1,

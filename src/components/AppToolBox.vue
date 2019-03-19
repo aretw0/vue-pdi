@@ -193,10 +193,11 @@ import Utils from '@/api/utils';
     created () {
       console.log(cv ? 'OpenCV is available here!' : 'Uh oh..'); 
       window.getApp.$on('APP_TB', (op) => {
+        console.log(op);
         Utils.menuOp(op,this);
       });
       window.getApp.$on('APP_UPLOAD', (image) => {
-        console.log(image);
+        // console.log(image);
         Utils.imageUpload(image, this);
       });
     },
@@ -222,25 +223,25 @@ import Utils from '@/api/utils';
        
       },
       moveEv (ev) {
-        // console.log(ev);
-        let position;
-        let current_left = 0, current_top = 0;
-        let obj = ev.target;
-        if (obj.offsetParent){
-            do{
-                current_left += obj.offsetLeft;
-                current_top += obj.offsetTop;
-            }while(obj = obj.offsetParent);
-            position = {x: current_left, y: current_top};
-        }
-        this.info.x = ev.pageX - position.x;
-        this.info.y = ev.pageY - position.y;
-        let img =  ev.target.getContext('2d').getImageData(this.info.x,this.info.y,1,1);
-        this.info.r = img.data[0];
-        this.info.g = img.data[1];
-        this.info.b = img.data[2];
-        this.info.a = img.data[3];
-        this.info.bgc = "background-color: rgb("+this.info.r+","+this.info.g+","+this.info.b+");"
+        console.log(ev);
+        // let position;
+        // let current_left = 0, current_top = 0;
+        // let obj = ev.target;
+        // if (obj.offsetParent){
+        //     do{
+        //         current_left += obj.offsetLeft;
+        //         current_top += obj.offsetTop;
+        //     }while(obj = obj.offsetParent);
+        //     position = {x: current_left, y: current_top};
+        // }
+        // this.info.x = ev.pageX - position.x;
+        // this.info.y = ev.pageY - position.y;
+        // let img =  ev.target.getContext('2d').getImageData(this.info.x,this.info.y,1,1);
+        // this.info.r = img.data[0];
+        // this.info.g = img.data[1];
+        // this.info.b = img.data[2];
+        // this.info.a = img.data[3];
+        // this.info.bgc = "background-color: rgb("+this.info.r+","+this.info.g+","+this.info.b+");"
       },
       dblclickEv (ev) {
         // console.log(ev);

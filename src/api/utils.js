@@ -157,19 +157,33 @@ const Utils = {
                 vue.pushMessage("Selecione uma imagem primária","alert");
               }
             break;
+            case 'sobelgx':
+                if  (vue.primaryImg.selected) {
+                    let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                    let primData = vue.primaryImg.el;
+                    this.convolOpImage(op,canvas,primData);
+                    // this.putImageData(canvas,imgData);             
+                    vue.pushCanvas(canvas);
+                    vue.pushMessage("Operação concluída",'success');
+                  } else {
+                    vue.pushMessage("Selecione duas imagens!","alert");
+                  }
+            break;
           }
     },
-    opImageData(op,cv,images,norm) {
-
+    convolOpImage(op,cv,image) {
         let gl = cv.getContext("webgl2");
         if (!gl) {
             console.log("Contexto Webgl2 indisponível");
             return;
         }
 
+        // gl.canvas.width = image.width;
+        // gl.canvas.height = image.height;
+
         // setup GLSL program
         let program = webglUtils.createProgramFromSources(gl,
-        Shaders);
+        [Shaders.vertexShader,Shaders.conv3Fragment]);
 
         // look up where the vertex data needs to go.
         let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
@@ -218,6 +232,7 @@ const Utils = {
             1.0,  1.0,
         ]), gl.STATIC_DRAW);
         gl.enableVertexAttribArray(texCoordAttributeLocation);
+        gl.enableVertexAttribArray(texCoordAttributeLocation);
         size = 2;          // 2 components per iteration
         type = gl.FLOAT;   // the data is 32bit floats
         normalize = false; // don't normalize the data
@@ -261,8 +276,11 @@ const Utils = {
 
         // Set a rectangle the same size as the image.
         setRectangle(gl, 0, 0, image.width, image.height);
+        
+        gl.canvas.width = image.width;
+        gl.canvas.height = image.height;
 
-        webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+        // webglUtils.resizeCanvasToDisplaySize(gl.canvas);
 
         // Tell WebGL how to convert from clip space to pixels
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -285,15 +303,19 @@ const Utils = {
         gl.uniform1i(imageLocation, 0);
 
         // set the kernel and it's weight
-        gl.uniform1fv(kernelLocation, kernels[name]);
-        gl.uniform1f(kernelWeightLocation, computeKernelWeight(kernels[name]));
+        gl.uniform1fv(kernelLocation, Kernels[op]);
+        gl.uniform1f(kernelWeightLocation, computeKernelWeight(Kernels[op]));
 
         // Draw the rectangle.
         let primitiveType = gl.TRIANGLES;
         offset = 0;
         let count = 6;
         gl.drawArrays(primitiveType, offset, count);
-        /*let out = cv.getContext('2d').createImageData(in1.width, in1.height);
+    },
+    opImageData(op,cv,in1,in2,norm) {
+
+       
+        let out = cv.getContext('2d').createImageData(in1.width, in1.height);
         let res = {
             maxR: 0,
             maxG: 0,
@@ -371,7 +393,7 @@ const Utils = {
                 out.data[pos + 3] = 255;
             }
         }
-        return out;*/
+        return out;
     },
     cmpImageData (op,cv,inp) {
         let comp;
@@ -627,6 +649,13 @@ function setRectangle(gl, x, y, width, height) {
        x2, y1,
        x2, y2,
     ]), gl.STATIC_DRAW);
+}
+
+function computeKernelWeight(kernel) {
+    var weight = kernel.reduce(function(prev, curr) {
+        return prev + curr;
+    });
+    return weight <= 0 ? 1 : weight;
 }
 
 function scale_n(num, in_min, in_max, out_min, out_max) {

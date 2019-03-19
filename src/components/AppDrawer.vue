@@ -36,7 +36,7 @@
                   </v-list-tile>
                   <template v-for="(grand, k) in subItem.children">
                     <!-- sub sub group -->
-                    <v-list-group v-if="grand.items" :key="grand.name" :group="grand.group" :prepend-icon="grand.icon" sub-group="grand-group">
+                    <v-list-group v-if="grand.items" :key="grand.name" :group="grand.group" :prepend-icon="grand.icon" sub-group="sub-group">
                       <v-list-tile slot="activator" ripple="ripple">
                         <v-list-tile-content>
                           <v-list-tile-title>{{ grand.title }}</v-list-tile-title>

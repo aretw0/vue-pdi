@@ -193,8 +193,8 @@ const Menu =  [
           { name: 'po2x3', title: 'Laplaciano H1' },
           { name: 'po2x3', title: 'Laplaciano H2' },
           { 
-            name: 'prewii',
-            title: 'Prewii',
+            name: 'prew',
+            title: 'Prewiit',
             group: 'bordersd',
             items: true,
             children: [
@@ -215,8 +215,8 @@ const Menu =  [
             ]
           },
           { 
-            name: 'sobel',
-            title: 'Sobel',
+            name: 'lapla',
+            title: 'Laplaciano',
             group: 'bordersd',
             items: true,
             children: [
