@@ -105,7 +105,7 @@ const Menu =  [
           { name: 'mode', title: 'Moda' },
           {
             name: 'bordersf',
-            title: 'Bordas',
+            title: 'Preservar Bordas',
             group: 'lowft',
             items: true,
             children: [
@@ -136,9 +136,17 @@ const Menu =  [
         group: 'filter',
         items: true,
         children: [
-          { name: 'po2x2', title: 'Pontilhado Ordenado 2x2' },
-          { name: 'po2x3', title: 'Pontilhado Ordenado 2x3' },
-          { name: 'po3x3', title: 'Pontilhado Ordenado 3x3' },
+          { 
+            name: 'po',
+            title: 'Pontilhado Ordenado',
+            group: 'halftone',
+            items: true,
+            children: [
+                { name: 'po2x2', title: '2x2' },
+                { name: 'po2x3', title: '2x3' },
+                { name: 'po3x3', title: '3x3' }
+            ]
+          },
           { 
             name: 'pd',
             title: 'Pontilhado Difuso',
@@ -164,7 +172,7 @@ const Menu =  [
       {
         title: 'Pontos',
         name: 'dots',
-        group: 'segmentation',
+        group: 'segmentation'
       },
       {
         title: 'Retas',
@@ -187,11 +195,9 @@ const Menu =  [
         children: [
           { name: 'robts', title: 'Roberts' },
           { name: 'crossrobts', title: 'Roberts Cruzado' },
-          { name: 'po2x3', title: 'Krish' },
-          { name: 'po2x3', title: 'Robinson' },
-          { name: 'po2x3', title: 'Frey-Chen' },
-          { name: 'po2x3', title: 'Laplaciano H1' },
-          { name: 'po2x3', title: 'Laplaciano H2' },
+          { name: 'krish', title: 'Krish' },
+          { name: 'robin', title: 'Robinson' },
+          { name: 'freche', title: 'Frey-Chen' },
           { 
             name: 'prew',
             title: 'Prewiit',

@@ -1,3 +1,5 @@
+import { ok } from "assert";
+
 // Define several convolution kernels
 const Kernels = {
    normal: [
@@ -5,11 +7,48 @@ const Kernels = {
       0, 1, 0,
       0, 0, 0,
    ],
+// filtragem
+   // passa-baixa
+   media3: [],
+   media5: [],
+   max: [],
+   min: [],
+   mode: [],
+      //preservar bordas
+   kawa: [], // Kawahara
+   nagmat: [], // Nagao e Matsuyama
+   sombo: [], // Somboonkaew
+
+   // passa-alta
+   h1: [],
+   h2: [],
+   m1: [],
+   m2: [],
+   m3: [],
+   highbt: [], // high-boost
+
+   // halftoning (meio tom)
+      // pontilhado ordenado
+   po2x2: [],
+   po2x3: [],
+   po3x3: [],
+      // pontilhado difuso
+   floste: [], // Floyd e Steinberg
+   jarjunin: [], // Jarvis, Judice & Ninke
+   stucki: [], // Stucki
+   stevarc: [], // Stevenson e Arce
+// segmentação
+   dots(t) { return [t] }, // pontos
+   // Retas
    horiz: [],
    h2: [],
    a45: [],
    a135: [],
    m3: [],
+
+   // Bordas
+   robts: [], // roberts
+   crossrobts: [], // cross roberts
    // SOBEL
    sobelgy: [
       1,  2,  1,
@@ -34,6 +73,15 @@ const Kernels = {
       1,  0, -1,
    ],
    prewmag() { return [this.prewgx, this.prewgy]; },
+   krish: [], // krish
+   robin: [], // robinson
+   freche: [], // Frey-Chen
+   //laplaciano
+   lablah1: [],
+   lablah2: [],
+
+
+   // segmentação
 
    gaussianBlur: [
       0.045, 0.122, 0.045,
