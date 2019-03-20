@@ -98,8 +98,26 @@ const Menu =  [
         group: 'filter',
         items: true,
         children: [
-          { name: 'media3', title: 'Média 3x3' },
-          { name: 'media5', title: 'Média 5x5' },
+          { 
+            name: 'media',
+            title: 'Média',
+            group: 'lowft',
+            items: true,
+            children: [
+                { name: 'media3', title: '3x3' },
+                { name: 'media5', title: '5x5' }
+            ]
+          },
+          { 
+            name: 'mediana',
+            title: 'Mediana',
+            group: 'lowft',
+            items: true,
+            children: [
+                { name: 'mediana3', title: '3x3' },
+                { name: 'mediana5', title: '5x5' }
+            ]
+          },
           { name: 'max', title: 'Máximo' },
           { name: 'min', title: 'Mínimo' },
           { name: 'mode', title: 'Moda' },

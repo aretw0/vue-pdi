@@ -52,7 +52,7 @@ const Shaders = {
     outColor = texture(u_image, v_texCoord);
   }
   `,
-  conv3Fragment(insert1,insert2) {
+  convFragment(insert1,insert2) {
     let inject1 = `uniform float u_kernel[9];
     uniform float u_kernelWeight;`;
     let inject2 = `

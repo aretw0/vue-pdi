@@ -177,6 +177,13 @@ const Utils = {
             case 'prewgx':
             case 'prewgy':
             case 'prewmag':
+            case 'media3':
+            case 'media5':
+            case 'h1':
+            case 'h2':
+            case 'm1':
+            case 'm2':
+            case 'm3':
                 if  (vue.primaryImg.selected) {
                     let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
                     this.convolOpImage(op,canvas,vue.primaryImg.el);            
@@ -195,6 +202,46 @@ const Utils = {
         let inject1, inject2, loadCb, locCb;
 
         switch(op) {
+            case 'media5':
+                inject2 = `vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
+  
+                vec4 colorSum = texture(u_image, v_texCoord + onePixel * vec2(-2, -2)) * u_kernel[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -2)) * u_kernel[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -2)) * u_kernel[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -2)) * u_kernel[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 2, -2)) * u_kernel[4] +
+            
+                    texture(u_image, v_texCoord + onePixel * vec2(-2, -1)) * u_kernel[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel[8] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 2, -1)) * u_kernel[9] +
+            
+                    texture(u_image, v_texCoord + onePixel * vec2(-2, 0)) * u_kernel[10] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, 0)) * u_kernel[11] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, 0)) * u_kernel[12] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, 0)) * u_kernel[13] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 2, 0)) * u_kernel[14] +
+            
+                    texture(u_image, v_texCoord + onePixel * vec2(-2, 1)) * u_kernel[15] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, 1)) * u_kernel[16] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, 1)) * u_kernel[17] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, 1)) * u_kernel[18] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 2, 1)) * u_kernel[19] +
+            
+                    texture(u_image, v_texCoord + onePixel * vec2(-2, 2)) * u_kernel[20] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, 2)) * u_kernel[21] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, 2)) * u_kernel[22] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, 2)) * u_kernel[23] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 2, 2)) * u_kernel[24] ;       
+                
+                colorFinal = vec4((colorSum / u_kernelWeight).rgb, 1);`;
+            case 'media3':
+            case 'h1':
+            case 'h2':
+            case 'm1':
+            case 'm2':
+            case 'm3':
             case 'sobelgx':
             case 'sobelgy':
             case 'prewgx':
@@ -261,7 +308,7 @@ const Utils = {
             break;
         }
 
-        doWebGL(cv,[Shaders.vertexShader,op === 'media5'? Shaders.conv5Fragment : Shaders.conv3Fragment(inject1,inject2)],image,locCb,loadCb);
+        doWebGL(cv,[Shaders.vertexShader,Shaders.convFragment(inject1,inject2)],image,locCb,loadCb);
         
     },
     opImageData(op,in1,in2,norm) {

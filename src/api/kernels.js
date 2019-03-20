@@ -7,8 +7,20 @@ const Kernels = {
    ],
 // filtragem
    // passa-baixa
-   media3: [],
-   media5: [],
+   media3: [
+      1, 1, 1,
+      1, 1, 1,
+      1, 1, 1
+   ],
+   media5: [
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1
+   ],
+   mediana3: [],
+   mediana5: [],
    max: [],
    min: [],
    mode: [],
@@ -18,18 +30,49 @@ const Kernels = {
    sombo: [], // Somboonkaew
 
    // passa-alta
-   h1: [],
-   h2: [],
-   m1: [],
-   m2: [],
-   m3: [],
+   h1: [
+       0, -1,  0
+      -1,  4, -1,
+       0, -1,  0    
+   ],
+   h2: [
+      -1, -1, -1,
+      -1,  8, -1,
+      -1, -1, -1
+   ],
+   m1: [
+      -1, -1, -1,
+      -1,  9, -1,
+      -1, -1, -1
+   ],
+   m2: [
+       1, -2,  1
+      -2,  5, -2,
+       1, -2,  1 
+   ],
+   m3: [
+       0, -1,  0
+      -1,  5, -1,
+       0, -1,  0 
+   ],
+   // perguntar depois
    highbt: [], // high-boost
 
    // halftoning (meio tom)
       // pontilhado ordenado
-   po2x2: [],
-   po2x3: [],
-   po3x3: [],
+   po2x2: [
+      0, 2,
+      3, 1
+   ],
+   po2x3: [
+      3, 0, 4,
+      5, 2, 1
+   ],
+   po3x3: [
+      6, 8, 4,
+      1, 0, 3,
+      5, 2, 7
+   ],
       // pontilhado difuso
    floste: [], // Floyd e Steinberg
    jarjunin: [], // Jarvis, Judice & Ninke
