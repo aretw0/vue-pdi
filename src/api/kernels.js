@@ -41,10 +41,9 @@ const Kernels = {
    dots(t) { return [t] }, // pontos
    // Retas
    horiz: [],
-   h2: [],
+   vert: [],
    a45: [],
    a135: [],
-   m3: [],
 
    // Bordas
    robts: [], // roberts

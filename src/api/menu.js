@@ -181,10 +181,9 @@ const Menu =  [
         items: true,
         children: [
           { name: 'horiz', title: 'Horizontal' },
-          { name: 'h2', title: 'Vertical' },
+          { name: 'vert', title: 'Vertical' },
           { name: 'a45', title: '45°' },
-          { name: 'a135', title: '135°' },
-          { name: 'm3', title: 'M3' }
+          { name: 'a135', title: '135°' }
         ]
       },
       {
