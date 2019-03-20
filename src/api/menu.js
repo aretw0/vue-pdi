@@ -53,105 +53,212 @@ const Menu =  [
       { name: 'fatia51', title: 'Fatiamento 51', chip: 'P&B' },
       { name: 'redis', title: 'Redistribuição', chip: 'Cor', color: 'orange' },
     ]
-  }
-  /* ,
-  {
-    title: 'Widgets',
-    group: 'widgets',
-    component: 'widgets',
-    icon: 'widgets',
-    items: [
-      { name: 'social', title: 'Social', component: 'components/social' },
-      { name: 'statistic', title: 'Statistic', badge: 'new', component: 'components/statistic' },
-      { name: 'chart', title: 'Chart', component: 'components/chart' },
-      { name: 'list', title: 'List', component: 'components/widget-list' },
-      // { name: 'post', title: 'Post', component: 'components/widget-post' },
-    ]
-  },  
-  { header: 'UI Elements' },
-  {
-    title: 'General',
-    group: 'components',
-    component: 'components',
-    icon: 'tune',
-    items: [
-      { name: 'alerts', title: 'Alerts', component: 'components/alerts' },
-      { name: 'avatars', title: 'Avatars', component: 'components/avatars' },
-      { name: 'badges', title: 'Badges', component: 'components/badges' },
-      { name: 'buttons', title: 'Buttons', component: 'components/buttons' },
-      { name: 'cards', title: 'Cards', component: 'components/cards' },
-      { name: 'carousels', title: 'Carousels', component: 'components/carousels' },
-      { name: 'chips', title: 'Chips', component: 'components/chips' },
-      { name: 'dialogs', title: 'Dialogs', component: 'components/dialogs' },
-      { name: 'icons', title: 'Icons', component: 'components/icons' },
-      { name: 'tables', title: 'Data Tables', component: 'components/tables' },
-      { name: 'parallax', title: 'Parallax  image', component: 'components/parallax' },
-      { name: 'snackbar', title: 'Snackbar', component: 'components/snackbar' },
-      { name: 'progress', title: 'Progress', component: 'components/progress' },      
-      { name: 'slider', title: 'Slider', component: 'components/sliders' },      
-      { name: 'tooltip', title: 'Tooltip', component: 'components/tooltips' },      
-      { name: 'pagination', title: 'Pagination', component: 'components/paginations' },      
-      { name: 'typography', title: 'Typography', component: 'components/typography' },      
-      { name: 'color', title: 'Color', component: 'components/color' },      
-
-    ]
   },
+  { divider: true },
   {
-    title: 'Pickers',
-    group: 'pickers',
-    component: 'picker',
-    icon: 'filter_vintage',
+    title: 'Realce',
+    icon: 'adjust',
+    name: 'realce',
     items: [
-      { name: 'timepicker', title: 'Timepicker', component: 'pickers/timepicker' },     
-      { name: 'datepicker', title: 'Datepicker', component: 'pickers/datepicker' },      
-
-    ]
-  },
-  {
-    title: 'Layout',
-    group: 'layout',
-    component: 'layout',
-    icon: 'view_compact',
-    items: [
-      { name: 'bottom-sheets', title: 'Bottom panels', component: 'components/bottom-sheets' },
-      { name: 'expansion-panels', title: 'Expansion panels', component: 'components/expansion-panels' },
-      { name: 'footer', title: 'Footer', component: 'components/footer' },
-      { name: 'lists', title: 'Lists', component: 'components/lists' },
-      { name: 'jumbotrons', title: 'Jumbotrons', badge: 'new', component: 'components/jumbotrons' },
-      { name: 'menus', title: 'Menus', component: 'components/menus' },
-      // { name: 'navigation-drawers', title: 'Navigation drawers', component: 'components/navigation-drawers' },
-      { name: 'tabs', title: 'Tabs', component: 'components/tabs' },
-      { name: 'toolbar', title: 'Toolbars', component: 'components/toolbar' },
-      { name: 'timeline', title: 'Timeline', component: 'components/timeline' },
-    ]
-  },  
-  {
-    title: 'Forms & Controls',
-    group: 'forms',
-    component: 'forms',
-    icon: 'edit',
-    items: [
-      { name: 'basic', title: 'General', component: 'components/basic-forms' },
-      { name: 'selects', title: 'Selects', badge: 'new', component: 'components/selects' },
-      { name: 'selection-controls', title: 'Selection Controls', component: 'components/selection-controls' },
-      { name: 'text-fields', title: 'Text Fields', component: 'components/text-fields' },
-      { name: 'steppers', title: 'Steppers', component: 'components/steppers' },
-      { name: 'editors', title: 'Editors', component: 'components/editors' },
+      {
+        title: 'Brilho/Contraste TL',
+        name: 'bctl',
+        group: 'adjust',
+        items: true,
+        children: [
+          { name: 'gap', title: 'Intervalo' },
+          { name: 'inverse', title: 'Inversa' }
+        ]
+      },
+      {
+        title: 'Brilho/Contraste TNL',
+        name: 'bctnl',
+        group: 'adjust',
+        items: true,
+        children: [
+          { name: 'log', title: 'Logaritmo' },
+          { name: 'root', title: 'Raiz quadrada' },
+          { name: 'expon', title: 'Exponencial' },
+          { name: 'square', title: 'Quadrado' }
+        ]
+      },
+      { name: 'equal', title: 'Equalização' },
+      { name: 'gama', title: 'Gama' }
     ]
   },
   { divider: true },
-  { header: 'Extras' },
   {
-    title: 'Pages',
-    group: 'extra',
-    icon: 'list',
+    title: 'Filtragem',
+    icon: 'filter',
+    name: 'filter',
     items: [
-      { name: 'Login', title: 'Login', component: 'Login' },
-      { name: '404', title: '404', component: 'NotFound' },
-      { name: '403', title: '403', component: 'AccessDenied' },
-      { name: '500', title: '500', component: 'ServerError' },
+      {
+        title: 'Passa-Baixa',
+        name: 'lowft',
+        group: 'filter',
+        items: true,
+        children: [
+          { name: 'media3', title: 'Média 3x3' },
+          { name: 'media5', title: 'Média 5x5' },
+          { name: 'max', title: 'Máximo' },
+          { name: 'min', title: 'Mínimo' },
+          { name: 'mode', title: 'Moda' },
+          {
+            name: 'bordersf',
+            title: 'Bordas',
+            group: 'lowft',
+            items: true,
+            children: [
+                { name: 'kawa', title: 'Kawahara' },
+                { name: 'nagmat', title: 'Nagao e Matsuyama' },
+                { name: 'sombo', title: 'Somboonkaew' }
+            ]
+          }
+        ]
+      },
+      {
+        title: 'Passa-Alta',
+        name: 'highft',
+        group: 'filter',
+        items: true,
+        children: [
+          { name: 'h1', title: 'H1' },
+          { name: 'h2', title: 'H2' },
+          { name: 'm1', title: 'M1' },
+          { name: 'm2', title: 'M2' },
+          { name: 'm3', title: 'M3' },
+          { name: 'highbt', title: 'Alto reforço' }
+        ]
+      },
+      {
+        title: 'Meio-tom',
+        name: 'halftone',
+        group: 'filter',
+        items: true,
+        children: [
+          { name: 'po2x2', title: 'Pontilhado Ordenado 2x2' },
+          { name: 'po2x3', title: 'Pontilhado Ordenado 2x3' },
+          { name: 'po3x3', title: 'Pontilhado Ordenado 3x3' },
+          { 
+            name: 'pd',
+            title: 'Pontilhado Difuso',
+            group: 'halftone',
+            items: true,
+            children: [
+                { name: 'floste', title: 'Floyd e Steinberg' },
+                { name: 'jarjunin', title: 'Jarvis, Judice & Ninke' },
+                { name: 'stucki', title: 'Stucki' },
+                { name: 'stevarc', title: 'Stevenson e Arce' }
+            ]
+          }
+        ]
+      }
     ]
-  } */
+  },
+  { divider: true },
+  {
+    title: 'Segmentação',
+    icon: 'filter_b_and_w',
+    name: 'segmentation',
+    items: [
+      {
+        title: 'Pontos',
+        name: 'dots',
+        group: 'segmentation',
+      },
+      {
+        title: 'Retas',
+        name: 'strai',
+        group: 'segmentation',
+        items: true,
+        children: [
+          { name: 'horiz', title: 'Horizontal' },
+          { name: 'h2', title: 'Vertical' },
+          { name: 'a45', title: '45°' },
+          { name: 'a135', title: '135°' },
+          { name: 'm3', title: 'M3' }
+        ]
+      },
+      {
+        title: 'Bordas',
+        name: 'bordersd',
+        group: 'segmentation',
+        items: true,
+        children: [
+          { name: 'robts', title: 'Roberts' },
+          { name: 'crossrobts', title: 'Roberts Cruzado' },
+          { name: 'po2x3', title: 'Krish' },
+          { name: 'po2x3', title: 'Robinson' },
+          { name: 'po2x3', title: 'Frey-Chen' },
+          { name: 'po2x3', title: 'Laplaciano H1' },
+          { name: 'po2x3', title: 'Laplaciano H2' },
+          { 
+            name: 'prew',
+            title: 'Prewiit',
+            group: 'bordersd',
+            items: true,
+            children: [
+                { name: 'prewgx', title: 'Gx' },
+                { name: 'prewgy', title: 'Gy' },
+                { name: 'prewmag', title: 'Magnitude' }
+            ]
+          },
+          { 
+            name: 'sobel',
+            title: 'Sobel',
+            group: 'bordersd',
+            items: true,
+            children: [
+                { name: 'sobelgx', title: 'Gx' },
+                { name: 'sobelgy', title: 'Gy' },
+                { name: 'sobelmag', title: 'Magnitude' }
+            ]
+          },
+          { 
+            name: 'lapla',
+            title: 'Laplaciano',
+            group: 'bordersd',
+            items: true,
+            children: [
+                { name: 'laplah1', title: 'H1' },
+                { name: 'laplah2', title: 'H2' },
+            ]
+          }
+        ]
+      },
+      {
+        title: 'Limiarização',
+        name: 'limiar',
+        group: 'segmentation',
+        items: true,
+        children: [
+          { name: 'glob', title: 'Global' },
+          { 
+            name: 'lccal',
+            title: 'Local',
+            group: 'limiar',
+            items: true,
+            children: [
+                { name: 'medlim', title: 'Média' },
+                { name: 'minlim', title: 'Mínimo ' },
+                { name: 'maxlim', title: 'Máximo ' },
+                { name: 'niblack', title: 'Niblack' }
+            ]
+          }
+        ]
+      },
+      {
+        title: 'Regiões',
+        name: 'region',
+        group: 'segmentation',
+        items: true,
+        children: [
+          { name: 'regcres', title: 'Crescimento' },
+          { title: 'Watersheld', name: 'watersheld', group: 'segmentation' }
+        ]
+      }
+    ]
+  }
 ];
 // reorder menu
 Menu.forEach((item) => {

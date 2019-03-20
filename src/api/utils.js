@@ -1,5 +1,9 @@
 import ImageP from '@/api/imageP';
+import webglUtils from "webglUtils";
+import Shaders from '@/api/shaders';
+import Kernels from '@/api/kernels';
 
+/* eslint-disable */
 const Utils = {
     drawImageDialog (cv, img) {
         let ctx = cv.getContext('2d'); 
@@ -44,38 +48,70 @@ const Utils = {
         return canvas;
     },
     getImageData(cv) {
-        return cv.getContext('2d').getImageData(0,0, cv.width,cv.height);
+        let gl = cv.getContext("webgl2",{preserveDrawingBuffer: true});
+        if (!gl) {
+            return;
+        }
+        let width = gl.drawingBufferWidth;
+        let height = gl.drawingBufferHeight
+        let pixels = new Uint8Array(width * height * 4);
+    
+        gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+        let halfHeight = gl.drawingBufferHeight / 2 | 0;  // the | 0 keeps the result an int
+        let bytesPerRow = gl.drawingBufferWidth * 4;
+
+        // make a temp buffer to hold one row
+        let temp = new Uint8Array(width * 4);
+        for (let y = 0; y < halfHeight; ++y) {
+            let topOffset = y * bytesPerRow;
+            let bottomOffset = (height - y - 1) * bytesPerRow;
+
+            // make copy of a row on the top half
+            temp.set(pixels.subarray(topOffset, topOffset + bytesPerRow));
+
+            // copy a row from the bottom half to the top
+            pixels.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
+
+            // copy the copy of the top half row to the bottom half 
+            pixels.set(temp, bottomOffset);
+        }
+        return new ImageData(new Uint8ClampedArray(pixels),width,height);
+    },
+    renderImage() {
+
     },
     putImageData(cv,imgData) {
-        let ctx =  cv.getContext('2d');
-        cv.width = ctx.width = imgData.width;
-        cv.height = ctx.height = imgData.height;
-        ctx.putImageData(imgData,0,0);
+       doWebGL(cv,[Shaders.vertexShader,Shaders.fragmentShader],imgData);
     },
     imageUpload(image, vue) {
         const reader = new FileReader();
         var vm = vue;
-         reader.onload = function(e) {
-           let img = new ImageP(window.atob(e.target.result.split(',')[1]));
-           if (!img.notP) {
-             let canvas = Utils.createCanvas([vm.moveEv,vm.clickEv,vm.dblclickEv]);
-             let ctx = canvas.getContext('2d');
+        reader.onload = function(e) {
+            let canvas = Utils.createCanvas([vm.moveEv,vm.clickEv,vm.dblclickEv]);
+            let img = new ImageP(window.atob(e.target.result.split(',')[1]));
+            if (!img.notP) {
 
-             img.data = img._formatter.getImageData(img._parser,ctx);
+                // canvas.width = ctx.width = img.width;
+                // canvas.height = ctx.height = img.height;
 
-             canvas.width = ctx.width = img.width;
-             canvas.height = ctx.height = img.height;
+                Utils.putImageData(canvas,img._formatter.getImageData(img._parser));
 
-             ctx.putImageData(img.data,0,0);
-
-             // a forma de por
-             vm.pushCanvas(canvas);
-             vm.pushMessage("Imagem carregada!","success");
+                // a forma de por
+                vm.pushCanvas(canvas);
+                vm.pushMessage("Imagem carregada!","success");
            } else {
-             document.getElementById("imgLoad").src = URL.createObjectURL(image);
-           }
-         };
-         reader.readAsDataURL(image);
+                let loadImg = new Image();
+                loadImg.src = URL.createObjectURL(image);
+                loadImg.onload = function(data) {
+                    Utils.putImageData(canvas,loadImg);
+                    // a forma de por
+                    vm.pushCanvas(canvas);
+                    vm.pushMessage("Imagem carregada!","success");
+                };
+            }
+        };
+        reader.readAsDataURL(image);
     },
     menuOp (op,vue) {
         // nesse momento fazemos as operações
@@ -91,7 +127,7 @@ const Utils = {
                 let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
                 let primData = this.getImageData(vue.primaryImg.el);
                 let seconData = this.getImageData(vue.secondaryImg.el);
-                let imgData = this.opImageData(op,canvas,primData,seconData,vue.normalize);
+                let imgData = this.opImageData(op,primData,seconData,vue.normalize);
                 this.putImageData(canvas,imgData);             
                 vue.pushCanvas(canvas);
                 vue.pushMessage("Operação concluída",'success');
@@ -106,14 +142,14 @@ const Utils = {
             case 'yuvhd':
               if  (vue.primaryImg.selected) {
                 let primData = this.getImageData(vue.primaryImg.el);
-                let compData = this.cmpImageData(op,this.createCanvas(),primData);           
+                let compData = this.cmpImageData(op,primData);           
                 for (const key in compData) {
-                      if (compData.hasOwnProperty(key)) {
-                          let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
-                          this.putImageData(canvas,compData[key]);
-                          vue.pushCanvas(canvas);
-                      }
-                  }
+                    if (compData.hasOwnProperty(key)) {
+                        let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                        this.putImageData(canvas,compData[key]);
+                        vue.pushCanvas(canvas);
+                    }
+                }
                 vue.pushMessage("Operação concluída",'success');
   
               } else {
@@ -126,11 +162,8 @@ const Utils = {
                 
                 let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
   
-                let primData = this.getImageData(vue.primaryImg.el);
-  
-                let imgData = this.colorImageData(op,canvas,primData);
-  
-                this.putImageData(canvas,imgData);             
+                this.colorImageData(op,this.getImageData(vue.primaryImg.el));
+              
                 vue.pushCanvas(canvas);
                 vue.pushMessage("Operação concluída",'success');
   
@@ -138,11 +171,101 @@ const Utils = {
                 vue.pushMessage("Selecione uma imagem primária","alert");
               }
             break;
+            case 'sobelgx':
+            case 'sobelgy':
+            case 'sobelmag':
+            case 'prewgx':
+            case 'prewgy':
+            case 'prewmag':
+                if  (vue.primaryImg.selected) {
+                    let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                    this.convolOpImage(op,canvas,vue.primaryImg.el);            
+                    vue.pushCanvas(canvas);
+                    vue.pushMessage("Operação concluída",'success');
+                  } else {
+                    vue.pushMessage("Selecione uma imagem primária","alert");
+                  }
+            break;
           }
     },
-    opImageData(op,cv,in1,in2,norm) {
+    convolOpImage(op,cv,image) {
+        
+        let kernel1Location, kernel2Location, kernel1WeightLocation, kernel2WeightLocation;
 
-        let out = cv.getContext('2d').createImageData(in1.width, in1.height);
+        let inject1, inject2, loadCb, locCb;
+
+        switch(op) {
+            case 'sobelgx':
+            case 'sobelgy':
+            case 'prewgx':
+            case 'prewgy':
+                locCb = function (gl,program) {
+                    kernel1Location = gl.getUniformLocation(program, "u_kernel[0]");
+                    kernel1WeightLocation = gl.getUniformLocation(program, "u_kernelWeight");
+                }; 
+                loadCb = function (gl) {
+                    gl.uniform1fv(kernel1Location, Kernels[op]);
+                    gl.uniform1f(kernel1WeightLocation, computeKernelWeight(Kernels[op]));
+                };
+            break;
+            case 'sobelmag':
+            case 'prewmag':
+                locCb = function (gl,program) {
+                    kernel1Location = gl.getUniformLocation(program, "u_kernel1[0]");
+                    kernel2Location = gl.getUniformLocation(program, "u_kernel2[0]");
+                    kernel1WeightLocation = gl.getUniformLocation(program, "u_kernel1Weight");
+                    kernel2WeightLocation = gl.getUniformLocation(program, "u_kernel2Weight");
+                }; 
+                loadCb = function (gl) {
+                    let convKernels = Kernels[op]();
+                    console.log(convKernels);
+                    gl.uniform1fv(kernel1Location, convKernels[0]);
+                    gl.uniform1fv(kernel2Location, convKernels[1]);
+                    gl.uniform1f(kernel1WeightLocation, computeKernelWeight(convKernels[0]));
+                    gl.uniform1f(kernel2WeightLocation, computeKernelWeight(convKernels[1]));
+                };
+                inject1 = `uniform float u_kernel1[9];
+                uniform float u_kernel2[9];
+                uniform float u_kernel1Weight;
+                uniform float u_kernel2Weight;`;
+
+                inject2 = `vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
+    
+                vec4 colorSum1 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel1[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel1[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel1[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel1[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel1[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel1[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel1[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel1[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel1[8] ;
+                vec4 colorSum2 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel2[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel2[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel2[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel2[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel2[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel2[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel2[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel2[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel2[8] ;
+                
+
+                vec4 color1 = vec4((colorSum1 / u_kernel1Weight).rgb, 1);
+                vec4 color2 = vec4((colorSum2 / u_kernel2Weight).rgb, 1);
+                vec4 pot = vec4(2,2,2,2);
+                colorFinal = sqrt(pow(color1,pot)+pow(color2,pot));
+                `;
+            break;
+        }
+
+        doWebGL(cv,[Shaders.vertexShader,op === 'media5'? Shaders.conv5Fragment : Shaders.conv3Fragment(inject1,inject2)],image,locCb,loadCb);
+        
+    },
+    opImageData(op,in1,in2,norm) {
+        let out = new ImageData(in1.width,in1.height);
         let res = {
             maxR: 0,
             maxG: 0,
@@ -222,39 +345,38 @@ const Utils = {
         }
         return out;
     },
-    cmpImageData (op,cv,inp) {
+    cmpImageData (op,inp) {
         let comp;
-
         switch (op) {
             case 'rgb':
                 comp = {
-                    r: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    g: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    b: cv.getContext('2d').createImageData(inp.width, inp.height)
+                    r: new ImageData(inp.width,inp.height),
+                    g: new ImageData(inp.width,inp.height),
+                    b: new ImageData(inp.width,inp.height)
                 };
             break;
             case 'cmyk': {
                 comp = {
-                    c: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    m: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    y: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    k: cv.getContext('2d').createImageData(inp.width, inp.height)
+                    c: new ImageData(inp.width,inp.height),
+                    m: new ImageData(inp.width,inp.height),
+                    y: new ImageData(inp.width,inp.height),
+                    k: new ImageData(inp.width,inp.height)
                 };
             }
             break;
             case 'hsb':
                 comp = {
-                    h: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    s: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    b: cv.getContext('2d').createImageData(inp.width, inp.height)
+                    h: new ImageData(inp.width,inp.height),
+                    s: new ImageData(inp.width,inp.height),
+                    b: new ImageData(inp.width,inp.height)
                 }
             break;
             case 'yuvsd':
             case 'yuvhd':
                 comp = {
-                    y: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    u: cv.getContext('2d').createImageData(inp.width, inp.height),
-                    v: cv.getContext('2d').createImageData(inp.width, inp.height)
+                    y: new ImageData(inp.width,inp.height),
+                    u: new ImageData(inp.width,inp.height),
+                    v: new ImageData(inp.width,inp.height)
                 }
             break;
         }
@@ -408,10 +530,9 @@ const Utils = {
         }
         return comp;
     },
-    colorImageData (op,cv,inp) {
-        let out = cv.getContext('2d').createImageData(inp.width, inp.height);
+    colorImageData (op,inp) {
+        let out = new ImageData(inp.width,inp.height);
         
-
         for (let row = 0; row < inp.height; row++) {
             for (let col = 0; col < inp.width; col++) {
                 let pos = (row * inp.width + col) * 4;
@@ -463,8 +584,173 @@ const Utils = {
     }
 }
 
+function setRectangle(gl, x, y, width, height) {
+    var x1 = x;
+    var x2 = x + width;
+    var y1 = y;
+    var y2 = y + height;
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+       x1, y1,
+       x2, y1,
+       x1, y2,
+       x1, y2,
+       x2, y1,
+       x2, y2,
+    ]), gl.STATIC_DRAW);
+}
+
+function computeKernelWeight(kernel) {
+    var weight = kernel.reduce(function(prev, curr) {
+        return prev + curr;
+    });
+    return weight <= 0 ? 1 : weight;
+}
+
 function scale_n(num, in_min, in_max, out_min, out_max) {
     return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+function doWebGL(cv,shaders,image,cb1,cb2) {
+
+    let gl = cv.getContext("webgl2", {preserveDrawingBuffer: true});
+    if (!gl) {
+        console.log("Contexto Webgl2 indisponível");
+        return;
+    }
+
+    // setup GLSL program
+    let program = webglUtils.createProgramFromSources(gl,
+    shaders);
+
+    // look up where the vertex data needs to go.
+    let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+    let texCoordAttributeLocation = gl.getAttribLocation(program, "a_texCoord");
+    
+    // lookup uniforms
+    let resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+    let imageLocation = gl.getUniformLocation(program, "u_image");
+
+    if (typeof cb1 === 'function') {
+        cb1(gl,program);
+    }
+
+    // Create a vertex array object (attribute state)
+    let vao = gl.createVertexArray();
+
+    // and make it the one we're currently working with
+    gl.bindVertexArray(vao);
+
+    // Create a buffer and put a single pixel space rectangle in
+    // it (2 triangles)
+    let positionBuffer = gl.createBuffer();
+
+    // Turn on the attribute
+    gl.enableVertexAttribArray(positionAttributeLocation);
+
+    // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+    // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+    let size = 2;          // 2 components per iteration
+    let type = gl.FLOAT;   // the data is 32bit floats
+    let normalize = false; // don't normalize the data
+    let stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+    let offset = 0;        // start at the beginning of the buffer
+    gl.vertexAttribPointer(
+        positionAttributeLocation, size, type, normalize, stride, offset);
+
+    // provide texture coordinates for the rectangle.
+    let texCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        0.0,  0.0,
+        1.0,  0.0,
+        0.0,  1.0,
+        0.0,  1.0,
+        1.0,  0.0,
+        1.0,  1.0,
+    ]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(texCoordAttributeLocation);
+    gl.enableVertexAttribArray(texCoordAttributeLocation);
+    size = 2;          // 2 components per iteration
+    type = gl.FLOAT;   // the data is 32bit floats
+    normalize = false; // don't normalize the data
+    stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+    offset = 0;        // start at the beginning of the buffer
+    gl.vertexAttribPointer(
+        texCoordAttributeLocation, size, type, normalize, stride, offset);
+
+    // Create a texture.
+    let texture = gl.createTexture();
+
+    // make unit 0 the active texture uint
+    // (ie, the unit all other texture commands will affect
+    gl.activeTexture(gl.TEXTURE0 + 0);
+
+    // Bind it to texture unit 0's 2D bind point
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+
+    // Set the parameters so we don't need mips and so we're not filtering
+    // and we don't repeat at the edges.
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    // Upload the image into the texture.
+    let mipLevel = 0;               // the largest mip
+    let internalFormat = gl.RGBA;   // format we want in the texture
+    let srcFormat = gl.RGBA;        // format of data we are supplying
+    let srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
+    gl.texImage2D(gl.TEXTURE_2D,
+                    mipLevel,
+                    internalFormat,
+                    srcFormat,
+                    srcType,
+                    image);
+
+    // Bind the position buffer so gl.bufferData that will be called
+    // in setRectangle puts data in the position buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+    // Set a rectangle the same size as the image.
+    setRectangle(gl, 0, 0, image.width, image.height);
+    
+    gl.canvas.width = image.width;
+    gl.canvas.height = image.height;
+
+    // Tell WebGL how to convert from clip space to pixels
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    // Clear the canvas
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // Tell it to use our program (pair of shaders)
+    gl.useProgram(program);
+
+    // Bind the attribute/buffer set we want.
+    gl.bindVertexArray(vao);
+
+    // Pass in the canvas resolution so we can convert from
+    // pixels to clipspace in the shader
+    gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+
+    // Tell the shader to get the texture from texture unit 0
+    gl.uniform1i(imageLocation, 0);
+
+    // set the kernel and it's weight
+    if (typeof cb2 === 'function') {
+        cb2(gl)
+    }
+
+    // Draw the rectangle.
+    let primitiveType = gl.TRIANGLES;
+    offset = 0;
+    let count = 6;
+    gl.drawArrays(primitiveType, offset, count);
 }
 
 export default Utils;

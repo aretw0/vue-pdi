@@ -98,10 +98,8 @@ const PPMFormatter = function (width, height, maxVal) {
 };
 
 
-PPMFormatter.prototype.getCanvas = function (parser, ctx) {
-    var img;
-
-    img = ctx.createImageData(this._width, this._height);
+PPMFormatter.prototype.getCanvas = function (parser) {
+    var img = new ImageData(this._width , this._height);
     
     for (var row = 0; row < this._height; row++) {
         for (var col = 0; col < this._width; col++) {
@@ -131,10 +129,8 @@ const PGMFormatter = function (width, height, maxVal) {
 };
 
 
-PGMFormatter.prototype.getImageData = function (parser, ctx) {
-    var img;
-
-    img = ctx.createImageData(this._width, this._height);
+PGMFormatter.prototype.getImageData = function (parser) {
+    var img = new ImageData(this._width , this._height);
     
     for (var row = 0; row < this._height; row++) {
         for (var col = 0; col < this._width; col++) {
@@ -158,8 +154,7 @@ const PBMFormatter = function (width, height) {
 };
 
 
-PBMFormatter.prototype.getCanvas = function (parser, ctx) {
-    var img;
+PBMFormatter.prototype.getCanvas = function (parser) {
     
     if (parser instanceof BinaryParser) {
         var data = '',
@@ -182,7 +177,7 @@ PBMFormatter.prototype.getCanvas = function (parser, ctx) {
     }
 
 
-    img = ctx.createImageData(this._width, this._height);
+    var img = new ImageData(this._width , this._height);
 
     for (var row = 0; row < this._height; row++) {
         for (var col = 0; col < this._width; col++) {
