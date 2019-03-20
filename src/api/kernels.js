@@ -1,5 +1,3 @@
-import { ok } from "assert";
-
 // Define several convolution kernels
 const Kernels = {
    normal: [
