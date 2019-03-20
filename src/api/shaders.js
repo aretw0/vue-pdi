@@ -32,29 +32,32 @@ const Shaders = {
     v_texCoord = a_texCoord;
   }
   `,
-  conv3Fragment:
+  fragmentShader:
   `#version 300 es
-  
+
   // fragment shaders don't have a default precision so we need
   // to pick one. mediump is a good default. It means "medium precision"
   precision mediump float;
-  
+
   // our texture
   uniform sampler2D u_image;
-  
-  // the convolution kernal data
-  uniform float u_kernel[9];
-  uniform float u_kernelWeight;
-  
+
   // the texCoords passed in from the vertex shader.
   in vec2 v_texCoord;
-  
+
   // we need to declare an output for the fragment shader
   out vec4 outColor;
 
   void main() {
+    outColor = texture(u_image, v_texCoord);
+  }
+  `,
+  conv3Fragment(insert1,insert2) {
+    let inject1 = `uniform float u_kernel[9];
+    uniform float u_kernelWeight;`;
+    let inject2 = `
     vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
-  
+    
     vec4 colorSum =
         texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel[0] +
         texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel[1] +
@@ -65,12 +68,42 @@ const Shaders = {
         texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel[6] +
         texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel[7] +
         texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel[8] ;
-      
     
-    outColor = vec4((colorSum / u_kernelWeight).rgb, 1);
-  }
-  `,
-  conv5: 
+    colorFinal = vec4((colorSum / u_kernelWeight).rgb, 1);`
+
+    if (typeof insert1 === 'string') {
+      inject1 = insert1;
+    }
+    if (typeof insert2 === 'string') {
+      inject2 = insert2;
+    }
+    return `#version 300 es
+    
+    // fragment shaders don't have a default precision so we need
+    // to pick one. mediump is a good default. It means "medium precision"
+    precision mediump float;
+    
+    // our texture
+    uniform sampler2D u_image;
+    
+    // the convolution kernal data
+    ${inject1}
+    
+    // the texCoords passed in from the vertex shader.
+    in vec2 v_texCoord;
+    
+    // we need to declare an output for the fragment shader
+    out vec4 outColor;
+
+    vec4 colorFinal;
+
+    void main() {
+      ${inject2}      
+      outColor = colorFinal;
+    }
+    `;
+  },
+  conv5Fragment: 
   `#version 300 es
   
   // fragment shaders don't have a default precision so we need

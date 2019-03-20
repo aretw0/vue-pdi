@@ -8,7 +8,6 @@
           </div>
         </v-card-title>
         <v-responsive id="cvArea">
-
         </v-responsive>
         <v-card-text v-if="cvs > 0" style="text-align: right;">
           X: {{info.x}} / Y: {{info.y}} - RGBA({{info.r}},{{info.g}},{{info.b}},{{info.a}}) <span :style="info.bgc">C</span>
@@ -140,7 +139,6 @@
 </template>
 
 <script>
-import cv from "openCV";
 import Utils from '@/api/utils';
 /* eslint-disable */
   export default {
@@ -191,7 +189,6 @@ import Utils from '@/api/utils';
       imgSrc: null
     }),
     created () {
-      console.log(cv ? 'OpenCV is available here!' : 'Uh oh..'); 
       window.getApp.$on('APP_TB', (op) => {
         console.log(op);
         Utils.menuOp(op,this);
@@ -219,9 +216,6 @@ import Utils from '@/api/utils';
         this.cvArea.children[0].appendChild(canvas);
         this.cvs++;
       },
-      imageLoaded (e) {
-       
-      },
       moveEv (ev) {
         // console.log(ev);
         let position;
@@ -236,18 +230,11 @@ import Utils from '@/api/utils';
         }
         this.info.x = ev.pageX - position.x;
         this.info.y = ev.pageY - position.y;
-        let img;
-        let ctx = ev.target.getContext('2d');
-        if (ctx) {
-          img =  ctx.getImageData(this.info.x,this.info.y,1,1).data;
-        } else {
-          console.log("Ctx 2d inacessível");
-          let gl = ev.target.getContext('webgl2');
-          img = new Uint8Array(4);
-          gl.readPixels(this.info.x,this.info.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, img);
-          // console.log(pixels);
-        }
-  
+        
+        let gl = ev.target.getContext('webgl2');
+        let img = new Uint8Array(4);
+        gl.readPixels(this.info.x,this.info.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        // console.log(pixels);
         this.info.r = img[0];
         this.info.g = img[1];
         this.info.b = img[2];

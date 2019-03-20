@@ -174,8 +174,8 @@ const Menu =  [
         children: [
           { name: 'horiz', title: 'Horizontal' },
           { name: 'h2', title: 'Vertical' },
-          { name: '45', title: '45°' },
-          { name: '135', title: '135°' },
+          { name: 'a45', title: '45°' },
+          { name: 'a135', title: '135°' },
           { name: 'm3', title: 'M3' }
         ]
       },
