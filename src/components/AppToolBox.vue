@@ -135,6 +135,94 @@
           Fechar
         </v-btn>
       </v-snackbar>
+      <v-menu
+        v-model="menu"
+        :close-on-content-click="false"
+        attach="#wb"
+      >
+  
+        <v-card>
+          <v-list>
+            <v-list-tile>
+  
+              <v-list-tile-content>
+                <v-list-tile-title>Informe parâmetro</v-list-tile-title>
+              </v-list-tile-content>
+  
+              <v-list-tile-action>
+                <v-btn
+                  icon
+                  @click="menu = false"
+                >
+                  <v-icon>close</v-icon>
+                </v-btn>
+              </v-list-tile-action>
+            </v-list-tile>
+          </v-list>
+  
+          <v-divider></v-divider>
+  
+          <v-list>
+            <v-list-tile>
+              <v-list-tile-action>
+                 <v-layout
+                  v-if="gapContrast"
+                  row
+                  wrap
+                >
+                  <v-flex
+                    shrink
+                    style="width: 60px"
+                  >
+                    <v-text-field
+                      v-model="gap[0]"
+                      class="mt-0"
+                      hide-details
+                      single-line
+                      type="number"
+                    ></v-text-field>
+                  </v-flex>
+            
+                  <v-flex xs8>
+                    <v-range-slider
+                      v-model="gap"
+                      :max="1"
+                      :min="0"
+                      :step="0.1"
+                    ></v-range-slider>
+                  </v-flex>
+                  <v-flex
+                    shrink
+                    style="width: 60px"
+                  >
+                    <v-text-field
+                      v-model="gap[1]"
+                      class="mt-0"
+                      hide-details
+                      single-line
+                      type="number"
+                    ></v-text-field>
+                  </v-flex>
+                </v-layout>
+                <v-text-field
+                  v-else
+                  hide-details
+                  type="number"
+                  label="Valor"
+                  v-model="valueParam"
+                ></v-text-field>
+              </v-list-tile-action>
+            </v-list-tile>
+          </v-list>
+  
+          <v-card-actions>
+            <v-spacer></v-spacer>
+  
+            <v-btn flat @click="menu = false">Cancelar</v-btn>
+            <v-btn color="primary" flat @click="doneArgs()">Pronto</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-menu>
   </v-layout>
 </template>
 
@@ -144,6 +232,10 @@ import Utils from '@/api/utils';
   export default {
     name: "app-toolbox",
     data: () => ({
+      menu: false,
+      valueParam: 1,
+      gap: [0,1],
+      operation: '',
       dialog: false,
       transOp:{
         rTotal: 360,
@@ -191,7 +283,16 @@ import Utils from '@/api/utils';
     created () {
       window.getApp.$on('APP_TB', (op) => {
         console.log(op);
-        Utils.menuOp(op,this);
+        this.operation = op;
+        switch (op) {
+          case 'gap':
+          case 'highbt':
+          this.menu = true;
+          break;
+          default:
+            Utils.menuOp(this);
+          break;
+        }
       });
       window.getApp.$on('APP_UPLOAD', (image) => {
         // console.log(image);
@@ -205,6 +306,10 @@ import Utils from '@/api/utils';
       // console.log(this.transArea);
     },
     methods: {
+      doneArgs() {
+        this.menu = false;
+        Utils.menuOp(this);
+      },
       pushMessage (msg,type) {
         this.snackbar.show = false; 
         this.snackbar.text = msg;
@@ -377,6 +482,9 @@ import Utils from '@/api/utils';
         let scale = 'scale(' + this.transOp.sX + ',' + this.transOp.sY + ')';
         let skew = 'skew(' + this.transOp.cX + 'deg,' + this.transOp.cY +'deg)';
         return { transform:  rotate + ' ' +translate + ' ' + scale + ' ' + skew }
+      },
+      gapContrast() {
+        return this.operation === 'gap';
       }
     }
   }

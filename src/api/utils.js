@@ -113,8 +113,10 @@ const Utils = {
         };
         reader.readAsDataURL(image);
     },
-    menuOp (op,vue) {
+    menuOp (vue) {
         // nesse momento fazemos as operações
+        let op = vue.operation;
+        let params;
         switch(op) {
             case 'sum': 
             case 'minus': 
@@ -171,12 +173,11 @@ const Utils = {
                 vue.pushMessage("Selecione uma imagem primária","alert");
               }
             break;
-            case 'sobelgx':
-            case 'sobelgy':
-            case 'sobelmag':
-            case 'prewgx':
-            case 'prewgy':
-            case 'prewmag':
+            // realce
+            case 'gap':
+            case 'inverse':
+
+            // filtragem
             case 'media3':
             case 'media5':
             case 'h1':
@@ -184,9 +185,24 @@ const Utils = {
             case 'm1':
             case 'm2':
             case 'm3':
+            case 'highbt':
+
+            // detecção de bordas
+            case 'sobelgx':
+            case 'sobelgy':
+            case 'sobelmag':
+            case 'prewgx':
+            case 'prewgy':
+            case 'prewmag':
+                if (op === 'highbt') {
+                    params = vue.valueParam;
+                } else if (op === 'gap') {
+                    params = vue.gap;
+                }
+
                 if  (vue.primaryImg.selected) {
                     let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
-                    this.convolOpImage(op,canvas,vue.primaryImg.el);            
+                    this.fragOpImage(op,canvas,vue.primaryImg.el,params);            
                     vue.pushCanvas(canvas);
                     vue.pushMessage("Operação concluída",'success');
                   } else {
@@ -195,14 +211,24 @@ const Utils = {
             break;
           }
     },
-    convolOpImage(op,cv,image) {
+    fragOpImage(op,cv,image,params) {
         
-        let kernel1Location, kernel2Location, kernel1WeightLocation, kernel2WeightLocation;
+        let location1, location2, location3, location4;
 
         let inject1, inject2, loadCb, locCb;
 
         switch(op) {
             case 'media5':
+                locCb = function (gl,program) {
+                    location1 = gl.getUniformLocation(program, "u_kernel[0]");
+                    location2 = gl.getUniformLocation(program, "u_kernelWeight");
+                }; 
+                loadCb = function (gl) {
+                    gl.uniform1fv(location1, Kernels[op]);
+                    gl.uniform1f(location2, computeKernelWeight(Kernels[op]));
+                };
+                inject1 = `uniform float u_kernel[25];
+                uniform float u_kernelWeight;`;
                 inject2 = `vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
   
                 vec4 colorSum = texture(u_image, v_texCoord + onePixel * vec2(-2, -2)) * u_kernel[0] +
@@ -236,40 +262,91 @@ const Utils = {
                     texture(u_image, v_texCoord + onePixel * vec2( 2, 2)) * u_kernel[24] ;       
                 
                 colorFinal = vec4((colorSum / u_kernelWeight).rgb, 1);`;
+            break;
+            case 'gap':
+                locCb = function (gl,program) {
+                    location1 = gl.getUniformLocation(program, "u_gap[0]");
+                }; 
+                loadCb = function (gl) {
+                    gl.uniform1fv(location1, params);
+                };
+                inject1 = `uniform float u_gap[2];`;
+                inject2 = `
+                vec4 colorCmp = texture(u_image, v_texCoord);
+                if (colorCmp.r < u_gap[0]) {
+                    colorCmp.r = u_gap[0];
+                } else if (colorCmp.r > u_gap[1]) {
+                    colorCmp.r = u_gap[1];
+                }
+                if (colorCmp.g < u_gap[0]) {
+                    colorCmp.g = u_gap[0];
+                } else if (colorCmp.g > u_gap[1]) {
+                    colorCmp.g = u_gap[1];
+                }
+                if (colorCmp.b < u_gap[0]) {
+                    colorCmp.b = u_gap[0];
+                } else if (colorCmp.b > u_gap[1]) {
+                    colorCmp.b = u_gap[1];
+                }
+                colorFinal = colorCmp;
+                `;
+            break;
+            case 'inverse':
             case 'media3':
             case 'h1':
             case 'h2':
             case 'm1':
             case 'm2':
             case 'm3':
+            case 'highbt':
             case 'sobelgx':
             case 'sobelgy':
             case 'prewgx':
             case 'prewgy':
                 locCb = function (gl,program) {
-                    kernel1Location = gl.getUniformLocation(program, "u_kernel[0]");
-                    kernel1WeightLocation = gl.getUniformLocation(program, "u_kernelWeight");
+                    location1 = gl.getUniformLocation(program, "u_kernel[0]");
+                    location2 = gl.getUniformLocation(program, "u_kernelWeight");
                 }; 
                 loadCb = function (gl) {
-                    gl.uniform1fv(kernel1Location, Kernels[op]);
-                    gl.uniform1f(kernel1WeightLocation, computeKernelWeight(Kernels[op]));
+                    let kernel = typeof Kernels[op] === 'function' ? Kernels[op](params) : Kernels[op];
+                    gl.uniform1fv(location1, kernel);
+                    gl.uniform1f(location2, computeKernelWeight(kernel));
                 };
+                inject1 =  `uniform float u_kernel[9];
+                uniform float u_kernelWeight;`;
+                inject2 = `vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
+                
+                vec4 colorSum =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel[8] ;
+                
+                colorFinal = vec4((colorSum / u_kernelWeight).rgb, 1);`;
+                if (op === 'inverse') {
+                    inject2 += `colorFinal.xyz = colorFinal.xyz + vec3(1);`;
+                }
             break;
             case 'sobelmag':
             case 'prewmag':
                 locCb = function (gl,program) {
-                    kernel1Location = gl.getUniformLocation(program, "u_kernel1[0]");
-                    kernel2Location = gl.getUniformLocation(program, "u_kernel2[0]");
-                    kernel1WeightLocation = gl.getUniformLocation(program, "u_kernel1Weight");
-                    kernel2WeightLocation = gl.getUniformLocation(program, "u_kernel2Weight");
+                    location1 = gl.getUniformLocation(program, "u_kernel1[0]");
+                    location2 = gl.getUniformLocation(program, "u_kernel2[0]");
+                    location3 = gl.getUniformLocation(program, "u_kernel1Weight");
+                    location4 = gl.getUniformLocation(program, "u_kernel2Weight");
                 }; 
                 loadCb = function (gl) {
                     let convKernels = Kernels[op]();
                     console.log(convKernels);
-                    gl.uniform1fv(kernel1Location, convKernels[0]);
-                    gl.uniform1fv(kernel2Location, convKernels[1]);
-                    gl.uniform1f(kernel1WeightLocation, computeKernelWeight(convKernels[0]));
-                    gl.uniform1f(kernel2WeightLocation, computeKernelWeight(convKernels[1]));
+                    gl.uniform1fv(location1, convKernels[0]);
+                    gl.uniform1fv(location2, convKernels[1]);
+                    gl.uniform1f(location3, computeKernelWeight(convKernels[0]));
+                    gl.uniform1f(location4, computeKernelWeight(convKernels[1]));
                 };
                 inject1 = `uniform float u_kernel1[9];
                 uniform float u_kernel2[9];
@@ -308,7 +385,7 @@ const Utils = {
             break;
         }
 
-        doWebGL(cv,[Shaders.vertexShader,Shaders.convFragment(inject1,inject2)],image,locCb,loadCb);
+        doWebGL(cv,[Shaders.vertexShader,Shaders.makeFragment(inject1,inject2)],image,locCb,loadCb);
         
     },
     opImageData(op,in1,in2,norm) {

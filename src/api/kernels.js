@@ -5,6 +5,12 @@ const Kernels = {
       0, 1, 0,
       0, 0, 0,
    ],
+// realce
+inverse: [
+   0, 0, 0,
+   0, -1, 0,
+   0, 0, 0
+],
 // filtragem
    // passa-baixa
    media3: [
@@ -56,7 +62,12 @@ const Kernels = {
        0, -1,  0 
    ],
    // perguntar depois
-   highbt: [], // high-boost
+   highbt(A) {
+      return [
+      -1, -1, -1
+      -1, (9*A-1), -1
+      -1, -1, -1
+   ]}, // high-boost
 
    // halftoning (meio tom)
       // pontilhado ordenado
@@ -86,7 +97,7 @@ const Kernels = {
    a45: [],
    a135: [],
 
-   // Bordas
+   // Detecção de Bordas
    robts: [], // roberts
    crossrobts: [], // cross roberts
    // SOBEL
@@ -113,7 +124,7 @@ const Kernels = {
       1,  0, -1,
    ],
    prewmag() { return [this.prewgx, this.prewgy]; },
-   krish: [], // krish
+   kirsch: [], // kirsch
    robin: [], // robinson
    freche: [], // Frey-Chen
    //laplaciano
