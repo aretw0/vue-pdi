@@ -178,6 +178,9 @@ const Utils = {
             case 'inverse':
 
             // filtragem
+            case 'po2x2':
+            case 'po2x3':
+            case 'po3x3':
             case 'media3':
             case 'media5':
             case 'h1':
@@ -194,6 +197,15 @@ const Utils = {
             case 'prewgx':
             case 'prewgy':
             case 'prewmag':
+            case 'robts':
+            case 'crossrobts':
+            
+            // segmentação
+            case 'dots':
+            case 'horiz':
+            case 'vert':
+            case 'a45':
+            case 'a135':
                 if (op === 'highbt') {
                     params = vue.valueParam;
                 } else if (op === 'gap') {
@@ -293,16 +305,26 @@ const Utils = {
             break;
             case 'inverse':
             case 'media3':
+            case 'po2x2':
+            case 'po2x3':
+            case 'po3x3':
             case 'h1':
             case 'h2':
             case 'm1':
             case 'm2':
             case 'm3':
             case 'highbt':
+            case 'robts':
+            case 'crossrobts':
             case 'sobelgx':
             case 'sobelgy':
             case 'prewgx':
             case 'prewgy':
+            case 'dots':
+            case 'horiz':
+            case 'vert':
+            case 'a45':
+            case 'a135':
                 locCb = function (gl,program) {
                     location1 = gl.getUniformLocation(program, "u_kernel[0]");
                     location2 = gl.getUniformLocation(program, "u_kernelWeight");
@@ -334,6 +356,8 @@ const Utils = {
             break;
             case 'sobelmag':
             case 'prewmag':
+            case 'robts':
+            case 'crossrobts':
                 locCb = function (gl,program) {
                     location1 = gl.getUniformLocation(program, "u_kernel1[0]");
                     location2 = gl.getUniformLocation(program, "u_kernel2[0]");
