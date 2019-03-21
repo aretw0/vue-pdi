@@ -135,10 +135,11 @@
           Fechar
         </v-btn>
       </v-snackbar>
-      <v-menu
+      <v-dialog
         v-model="menu"
-        :close-on-content-click="false"
+        persistent
         attach="#wb"
+        max-width="500"
       >
   
         <v-card>
@@ -167,8 +168,8 @@
               <v-list-tile-action>
                  <v-layout
                   v-if="gapContrast"
-                  row
-                  wrap
+                  justify-space-between
+                  row fill-height
                 >
                   <v-flex
                     shrink
@@ -204,13 +205,20 @@
                     ></v-text-field>
                   </v-flex>
                 </v-layout>
-                <v-text-field
+                <v-layout
                   v-else
-                  hide-details
-                  type="number"
-                  label="Valor"
-                  v-model="valueParam"
-                ></v-text-field>
+                  justify-center row wrap
+                >
+                  <v-flex>
+                    <v-slider
+                          v-model="valueParam"
+                          thumb-label="always"
+                          :max="1"
+                          :min="0"
+                          :step="0.1"
+                    ></v-slider>
+                  </v-flex>
+                </v-layout>
               </v-list-tile-action>
             </v-list-tile>
           </v-list>
@@ -222,7 +230,7 @@
             <v-btn color="primary" flat @click="doneArgs()">Pronto</v-btn>
           </v-card-actions>
         </v-card>
-      </v-menu>
+      </v-dialog>
   </v-layout>
 </template>
 
@@ -287,6 +295,7 @@ import Utils from '@/api/utils';
         switch (op) {
           case 'gap':
           case 'highbt':
+          case 'dots':
           this.menu = true;
           break;
           default:

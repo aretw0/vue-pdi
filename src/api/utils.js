@@ -199,6 +199,8 @@ const Utils = {
             case 'prewmag':
             case 'robts':
             case 'crossrobts':
+            case 'kirsch':
+            case 'robin':
             case 'laplah1':
             case 'laplah2':
             
@@ -208,7 +210,7 @@ const Utils = {
             case 'vert':
             case 'a45':
             case 'a135':
-                if (op === 'highbt') {
+                if (op === 'highbt' || op === 'dots') {
                     params = vue.valueParam;
                 } else if (op === 'gap') {
                     params = vue.gap;
@@ -227,12 +229,12 @@ const Utils = {
     },
     fragOpImage(op,cv,image,params) {
         
-        let location1, location2, location3, location4;
-
         let inject1, inject2, loadCb, locCb;
 
         switch(op) {
             case 'media5':
+            case 'po2x3': {
+                let location1, location2;
                 locCb = function (gl,program) {
                     location1 = gl.getUniformLocation(program, "u_kernel[0]");
                     location2 = gl.getUniformLocation(program, "u_kernelWeight");
@@ -276,8 +278,10 @@ const Utils = {
                     texture(u_image, v_texCoord + onePixel * vec2( 2, 2)) * u_kernel[24] ;       
                 
                 colorFinal = vec4((colorSum / u_kernelWeight).rgb, 1);`;
+            }
             break;
-            case 'gap':
+            case 'gap': {
+                let location1;
                 locCb = function (gl,program) {
                     location1 = gl.getUniformLocation(program, "u_gap[0]");
                 }; 
@@ -304,11 +308,11 @@ const Utils = {
                 }
                 colorFinal = colorCmp;
                 `;
+            }
             break;
             case 'inverse':
             case 'media3':
             case 'po2x2':
-            case 'po2x3':
             case 'po3x3':
             case 'h1':
             case 'h2':
@@ -328,18 +332,25 @@ const Utils = {
             case 'horiz':
             case 'vert':
             case 'a45':
-            case 'a135':
+            case 'a135': {
+                let location1, location2, location3;
                 locCb = function (gl,program) {
                     location1 = gl.getUniformLocation(program, "u_kernel[0]");
                     location2 = gl.getUniformLocation(program, "u_kernelWeight");
+                    if (op == 'dots') location3 = gl.getUniformLocation(program, "u_limiar");
                 }; 
                 loadCb = function (gl) {
                     let kernel = typeof Kernels[op] === 'function' ? Kernels[op](params) : Kernels[op];
                     gl.uniform1fv(location1, kernel);
                     gl.uniform1f(location2, computeKernelWeight(kernel));
+                    console.log(params);
+                    if (op === 'dots') gl.uniform1f(location3, params);
                 };
                 inject1 =  `uniform float u_kernel[9];
                 uniform float u_kernelWeight;`;
+                if (op === 'dots') {
+                    inject1 += `uniform float u_limiar;`
+                }
                 inject2 = `vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
                 
                 vec4 colorSum =
@@ -357,11 +368,19 @@ const Utils = {
                 if (op === 'inverse') {
                     inject2 += `colorFinal.xyz = colorFinal.xyz + vec3(1);`;
                 }
+                if (op === 'dots') {
+                    inject2 += `if (colorFinal.x > u_limiar && colorFinal.y > u_limiar && colorFinal.z > u_limiar) {
+                        colorFinal = vec4(0,0,0,1);
+                    }
+                    `;
+                }
+            }
             break;
             case 'sobelmag':
             case 'prewmag':
             case 'robts':
-            case 'crossrobts':
+            case 'crossrobts': {
+                let location1, location2, location3, location4;
                 locCb = function (gl,program) {
                     location1 = gl.getUniformLocation(program, "u_kernel1[0]");
                     location2 = gl.getUniformLocation(program, "u_kernel2[0]");
@@ -370,7 +389,7 @@ const Utils = {
                 }; 
                 loadCb = function (gl) {
                     let convKernels = Kernels[op]();
-                    console.log(convKernels);
+                    // console.log(convKernels);
                     gl.uniform1fv(location1, convKernels[0]);
                     gl.uniform1fv(location2, convKernels[1]);
                     gl.uniform1f(location3, computeKernelWeight(convKernels[0]));
@@ -409,7 +428,224 @@ const Utils = {
                 vec4 color2 = vec4((colorSum2 / u_kernel2Weight).rgb, 1);
                 vec4 pot = vec4(2,2,2,2);
                 colorFinal = sqrt(pow(color1,pot)+pow(color2,pot));
+                colorFinal.a = 1;
                 `;
+                // if (op === 'robts' || op === 'crossrobts') {
+                //     inject2 += `colorFinal.xyz = colorFinal.xyz + vec3(1);`;
+                // }
+            }
+            break;
+            case 'kirsch':
+            case 'robin': {
+                let location1, location2, location3, location4;
+                let location5, location6, location7, location8;
+                let location9, location10, location11, location12;
+                let location13, location14, location15, location16;
+                locCb = function (gl,program) {
+                    location1 = gl.getUniformLocation(program, "u_kernel1[0]");
+                    location2 = gl.getUniformLocation(program, "u_kernel2[0]");
+                    location3 = gl.getUniformLocation(program, "u_kernel3[0]");
+                    location4 = gl.getUniformLocation(program, "u_kernel4[0]");
+                    location5 = gl.getUniformLocation(program, "u_kernel5[0]");
+                    location6 = gl.getUniformLocation(program, "u_kernel6[0]");
+                    location7 = gl.getUniformLocation(program, "u_kernel7[0]");
+                    location8 = gl.getUniformLocation(program, "u_kernel8[0]");
+
+                    location9 = gl.getUniformLocation(program, "u_kernel1Weight");
+                    location10 = gl.getUniformLocation(program, "u_kernel2Weight");
+                    location11 = gl.getUniformLocation(program, "u_kernel3Weight");
+                    location12 = gl.getUniformLocation(program, "u_kernel4Weight");
+                    location13 = gl.getUniformLocation(program, "u_kernel5Weight");
+                    location14 = gl.getUniformLocation(program, "u_kernel6Weight");
+                    location15 = gl.getUniformLocation(program, "u_kernel7Weight");
+                    location16 = gl.getUniformLocation(program, "u_kernel8Weight");
+                }; 
+                loadCb = function (gl) {
+                    let convKernels = Kernels[op]();
+                    // console.log(convKernels);
+                    gl.uniform1fv(location1, convKernels[0]);
+                    gl.uniform1fv(location2, convKernels[1]);
+                    gl.uniform1fv(location3, convKernels[2]);
+                    gl.uniform1fv(location4, convKernels[3]);
+                    gl.uniform1fv(location5, convKernels[4]);
+                    gl.uniform1fv(location6, convKernels[5]);
+                    gl.uniform1fv(location7, convKernels[6]);
+                    gl.uniform1fv(location8, convKernels[7]);
+
+                    gl.uniform1f(location9, computeKernelWeight( convKernels[0]));
+                    gl.uniform1f(location10, computeKernelWeight( convKernels[1]));
+                    gl.uniform1f(location11, computeKernelWeight( convKernels[2]));
+                    gl.uniform1f(location12, computeKernelWeight( convKernels[3]));
+                    gl.uniform1f(location13, computeKernelWeight( convKernels[4]));
+                    gl.uniform1f(location14, computeKernelWeight( convKernels[5]));
+                    gl.uniform1f(location15, computeKernelWeight( convKernels[6]));
+                    gl.uniform1f(location16, computeKernelWeight( convKernels[7]));
+                };
+                inject1 = `uniform float u_kernel1[9];
+                uniform float u_kernel2[9];
+                uniform float u_kernel3[9];
+                uniform float u_kernel4[9];
+                uniform float u_kernel5[9];
+                uniform float u_kernel6[9];
+                uniform float u_kernel7[9];
+                uniform float u_kernel8[9];
+
+                uniform float u_kernel1Weight;
+                uniform float u_kernel2Weight;
+                uniform float u_kernel3Weight;
+                uniform float u_kernel4Weight;
+                uniform float u_kernel5Weight;
+                uniform float u_kernel6Weight;
+                uniform float u_kernel7Weight;
+                uniform float u_kernel8Weight;`;
+
+                inject2 = `vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
+    
+                vec4 colorSum1 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel1[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel1[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel1[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel1[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel1[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel1[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel1[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel1[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel1[8] ;
+                vec4 colorSum2 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel2[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel2[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel2[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel2[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel2[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel2[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel2[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel2[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel2[8] ;
+
+                vec4 colorSum3 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel3[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel3[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel3[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel3[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel3[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel3[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel3[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel3[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel3[8] ;
+                
+                vec4 colorSum4 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel4[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel4[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel4[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel4[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel4[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel4[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel4[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel4[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel4[8] ;
+
+                vec4 colorSum5 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel5[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel5[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel5[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel5[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel5[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel5[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel5[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel5[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel5[8] ;
+
+                vec4 colorSum6 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel6[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel6[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel6[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel6[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel6[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel6[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel6[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel6[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel6[8] ;
+                
+                vec4 colorSum7 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel7[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel7[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel7[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel7[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel7[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel7[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel7[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel7[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel7[8] ;
+
+                vec4 colorSum8 =
+                    texture(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel8[0] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel8[1] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel8[2] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel8[3] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel8[4] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel8[5] +
+                    texture(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel8[6] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel8[7] +
+                    texture(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel8[8] ;
+
+                vec4 color1 = vec4((colorSum1 / u_kernel1Weight).rgb, 1);
+                vec4 color2 = vec4((colorSum2 / u_kernel2Weight).rgb, 1);
+                vec4 color3 = vec4((colorSum3 / u_kernel3Weight).rgb, 1);
+                vec4 color4 = vec4((colorSum4 / u_kernel4Weight).rgb, 1);
+                vec4 color5 = vec4((colorSum5 / u_kernel5Weight).rgb, 1);
+                vec4 color6 = vec4((colorSum6 / u_kernel6Weight).rgb, 1);
+                vec4 color7 = vec4((colorSum7 / u_kernel7Weight).rgb, 1);
+                vec4 color8 = vec4((colorSum8 / u_kernel8Weight).rgb, 1);
+
+                vec4 major = color1;
+
+                bvec4 cmp = lessThan(major,color2);
+
+                if (cmp[0] && cmp[1] && cmp[2]) {
+                    major = color1;
+                } else {
+                    major = color2;
+                }
+
+                cmp = lessThan(major,color3);
+
+                if (cmp[0] && cmp[1] && cmp[2]) {
+                    major = color3;
+                }
+
+                cmp = lessThan(major,color4);
+
+                if (cmp[0] && cmp[1] && cmp[2]) {
+                    major = color4;
+                }
+
+                cmp = lessThan(major,color5);
+
+                if (cmp[0] && cmp[1] && cmp[2]) {
+                    major = color5;
+                }
+
+                cmp = lessThan(major,color6);
+
+                if (cmp[0] && cmp[1] && cmp[2]) {
+                    major = color6;
+                }
+
+                cmp = lessThan(major,color7);
+
+                if (cmp[0] && cmp[1] && cmp[2]) {
+                    major = color7;
+                }
+
+                cmp = lessThan(major,color8);
+
+                if (cmp[0] && cmp[1] && cmp[2]) {
+                    major = color8;
+                }
+                
+                colorFinal = major;
+                `;
+            }
             break;
         }
 

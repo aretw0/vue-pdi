@@ -212,7 +212,7 @@ const Menu =  [
         children: [
           { name: 'robts', title: 'Roberts' },
           { name: 'crossrobts', title: 'Roberts Cruzado' },
-          { name: 'krish', title: 'Krish' },
+          { name: 'kirsch', title: 'kirsch' },
           { name: 'robin', title: 'Robinson' },
           { name: 'freche', title: 'Frey-Chen' },
           { 
