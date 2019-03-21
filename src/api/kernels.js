@@ -282,12 +282,12 @@ const Kernels = {
       ];
    }, // Frey-Chen
    //laplaciano
-   lablah1: [
+   laplah1: [
       0, -1, 0,
       -1, 4, -1,
       0, -1, 0
    ],
-   lablah2: [
+   laplah2: [
       -1, -4, -1,
       -4, 20, -4,
       -1, -4, -1

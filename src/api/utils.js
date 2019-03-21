@@ -199,6 +199,8 @@ const Utils = {
             case 'prewmag':
             case 'robts':
             case 'crossrobts':
+            case 'laplah1':
+            case 'laplah2':
             
             // segmentação
             case 'dots':
@@ -320,6 +322,8 @@ const Utils = {
             case 'sobelgy':
             case 'prewgx':
             case 'prewgy':
+            case 'laplah1':
+            case 'laplah2':
             case 'dots':
             case 'horiz':
             case 'vert':
