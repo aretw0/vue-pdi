@@ -426,9 +426,10 @@ const Utils = {
 
                 vec4 color1 = vec4((colorSum1 / u_kernel1Weight).rgb, 1);
                 vec4 color2 = vec4((colorSum2 / u_kernel2Weight).rgb, 1);
-                vec4 pot = vec4(2,2,2,2);
+                vec4 pot = vec4(2.0,2.0,2.0,2.0);
+                // todo somar os absolutos
                 colorFinal = sqrt(pow(color1,pot)+pow(color2,pot));
-                colorFinal.a = 1;
+                colorFinal.a = 1.0;
                 `;
                 // if (op === 'robts' || op === 'crossrobts') {
                 //     inject2 += `colorFinal.xyz = colorFinal.xyz + vec3(1);`;

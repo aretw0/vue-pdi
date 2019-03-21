@@ -209,12 +209,23 @@
                   v-else
                   justify-center row wrap
                 >
+                <v-flex
+                    shrink
+                    style="width: 60px"
+                  >
+                    <v-text-field
+                      v-model="valueParam"
+                      class="mt-0"
+                      hide-details
+                      single-line
+                      type="number"
+                    ></v-text-field>
+                  </v-flex>
                   <v-flex>
                     <v-slider
                           v-model="valueParam"
                           thumb-label="always"
-                          :max="1"
-                          :min="0"
+                          :min="1"
                           :step="0.1"
                     ></v-slider>
                   </v-flex>
