@@ -3,6 +3,7 @@
     id="appDrawer"
     :mini-variant.sync="mini"
     fixed
+    :permanent="permanent"
     :dark="$vuetify.dark"
     app
     v-model="drawer"
@@ -11,8 +12,13 @@
     <v-toolbar color="darken-1" dark>
       <img :src="require('../assets/logo-pdi.png')" height="36" alt="PDI">
       <v-toolbar-title class="ml-0 pl-3">
-        <span class="hidden-sm-and-down">Toolbox</span>
-      </v-toolbar-title>        
+        <span>Toolbox</span>
+      </v-toolbar-title>
+      <v-checkbox
+        v-model="permanent"
+        hide-details
+        :label="`${ permanent ? 'Fixado' : 'Fixar' }`"
+      ></v-checkbox>        
     </v-toolbar>
     <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
       <v-list dense expand>
@@ -113,7 +119,8 @@ export default {
     menus: menu,
     scrollSettings: {
       maxScrollbarLength: 160
-    }    
+    },
+    permanent: false    
   }),
   created () {
     window.getApp.$on('APP_DRAWER_TOGGLED', () => {
