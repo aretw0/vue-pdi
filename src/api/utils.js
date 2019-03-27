@@ -78,11 +78,20 @@ const Utils = {
         }
         return new ImageData(new Uint8ClampedArray(pixels),width,height);
     },
-    renderImage() {
-
-    },
     putImageData(cv,imgData) {
        doWebGL(cv,[Shaders.vertexShader,Shaders.fragmentShader],imgData);
+    },
+    getHistogram(imgData) {
+        let hist = new Array(255).fill(0);
+        for (let row = 0; row < imgData.height; row++) {
+            for (let col = 0; col < imgData.width; col++) {
+                let pos = (row * imgData.width + col) * 4;
+                if (imgData.data[pos] === imgData.data[pos + 1] &&
+                    imgData.data[pos] === imgData.data[pos + 2])
+                    ++hist[imgData.data[pos]];
+            }
+        }
+        return hist;
     },
     imageUpload(image, vue) {
         const reader = new FileReader();
@@ -91,9 +100,6 @@ const Utils = {
             let canvas = Utils.createCanvas([vm.moveEv,vm.clickEv,vm.dblclickEv]);
             let img = new ImageP(window.atob(e.target.result.split(',')[1]));
             if (!img.notP) {
-
-                // canvas.width = ctx.width = img.width;
-                // canvas.height = ctx.height = img.height;
 
                 Utils.putImageData(canvas,img._formatter.getImageData(img._parser));
 
@@ -159,19 +165,35 @@ const Utils = {
               }
             break;
             case 'fatia51':
-            case 'redis':
-              if  (vue.primaryImg.selected) {
-                
-                let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
-  
-                this.colorImageData(op,this.getImageData(vue.primaryImg.el));
-              
-                vue.pushCanvas(canvas);
-                vue.pushMessage("Operação concluída",'success');
-  
-              } else {
-                vue.pushMessage("Selecione uma imagem primária","alert");
-              }
+            case 'redis': {
+                if  (vue.primaryImg.selected) {
+                    
+                    let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+
+                    this.putImageData(canvas,this.colorImageData(op,this.getImageData(vue.primaryImg.el)));
+                    
+                    vue.pushCanvas(canvas);
+                    vue.pushMessage("Operação concluída",'success');
+
+                } else {
+                    vue.pushMessage("Selecione uma imagem primária","alert");
+                }
+            }
+            break;
+
+            // equalização
+            case 'equaliz': {
+                if  (vue.primaryImg.selected) {
+                    let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                    let imgData = this.getImageData(vue.primaryImg.el);
+                    let res = this.equalizImage(imgData);            
+                    this.putImageData(canvas,res);
+                    vue.pushCanvas(canvas);
+                    vue.pushMessage("Operação concluída",'success');
+                } else {
+                    vue.pushMessage("Selecione uma imagem primária","alert");
+                }
+            }
             break;
             // realce
             case 'gap':
@@ -221,9 +243,9 @@ const Utils = {
                     this.fragOpImage(op,canvas,vue.primaryImg.el,params);            
                     vue.pushCanvas(canvas);
                     vue.pushMessage("Operação concluída",'success');
-                  } else {
+                } else {
                     vue.pushMessage("Selecione uma imagem primária","alert");
-                  }
+                }
             break;
           }
     },
@@ -652,6 +674,9 @@ const Utils = {
 
         doWebGL(cv,[Shaders.vertexShader,Shaders.makeFragment(inject1,inject2)],image,locCb,loadCb);
         
+    },
+    equalizImage(imgData) {
+        let hist = this.getHistogram(imgData);
     },
     opImageData(op,in1,in2,norm) {
         let out = new ImageData(in1.width,in1.height);

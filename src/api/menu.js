@@ -82,7 +82,7 @@ const Menu =  [
           { name: 'square', title: 'Quadrado' }
         ]
       },
-      { name: 'equal', title: 'Equalização' },
+      { name: 'equaliz', title: 'Equalização' },
       { name: 'gama', title: 'Gama' }
     ]
   },

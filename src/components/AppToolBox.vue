@@ -16,6 +16,7 @@
           <v-btn flat color="orange" @click="resetCtrl(true)">Resetar controles</v-btn>
           <v-btn flat color="red" @click="eraseAll()">Apagar tudo</v-btn>
           <v-btn flat v-if="primaryImg.selected" color="dark" @click="callDialog()">Transformadas</v-btn>
+          <v-btn flat v-if="primaryImg.selected || secondaryImg.selected" color="dark" @click="histogram()">Histograma</v-btn>
           <v-switch flat color="dark"
           :label="`${normalize ? 'Normalizar' : 'Truncar'}`"
           v-model="normalize"></v-switch>
@@ -242,15 +243,43 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <v-dialog
+        v-model="chart.show"
+        attach="#wb"
+      >
+        <v-widget title="Histograma" content-bg="white">
+            <div slot="widget-content">
+                <e-chart
+                v-if="chart.show" 
+                :path-option="this.chart.config"
+                height="400px"
+                width="100%"
+                >
+                </e-chart>     
+            </div>
+          </v-widget>  
+      </v-dialog>
   </v-layout>
 </template>
 
 <script>
 import Utils from '@/api/utils';
+import Histogram from '@/api/histogram';
+import EChart from '@/components/chart/echart';
+import Material from 'vuetify/es5/util/colors';
+import VWidget from '@/components/VWidget';
 /* eslint-disable */
   export default {
     name: "app-toolbox",
+    components: {
+      VWidget,
+      EChart
+    },
     data: () => ({
+      chart: {
+        show: false,
+        config: []
+      },
       menu: false,
       valueParam: 1,
       gap: [0,1],
@@ -476,6 +505,65 @@ import Utils from '@/api/utils';
          this.transOp.cY = 0;
          this.transOp.rX = false;
          this.transOp.rY = false;
+      },
+      histogram(){
+        if (this.primaryImg.selected && this.secondaryImg.selected &&
+            this.primaryImg.el !== this.secondaryImg.el) {
+          let imgData = Utils.getImageData(this.primaryImg.el);
+          let hist1 = Utils.getHistogram(imgData);
+          imgData = Utils.getImageData(this.secondaryImg.el);
+          let hist2 = Utils.getHistogram(imgData);
+
+          this.chart.config = [
+            ['dataset.source', Histogram.mapTwoValues(hist1,hist2)],
+            ['color', [Material.blue.base,Material.red.base]],
+            ['legend.show', true],
+            ['xAxis.axisLabel.show', true],
+            ['yAxis.axisLabel.show', true],
+            ['grid.left', '2%'],
+            ['grid.bottom', '5%'],
+            ['grid.right', '3%'],
+            ['series[0].type', 'bar'],
+            ['series[0].areaStyle', {}],
+            ['series[0].smooth', true],
+            ['series[1].type', 'bar'],
+            ['series[1].areaStyle', {}],
+            ['series[1].smooth', true]
+          ];
+        } else if(this.primaryImg.selected) {
+          let imgData = Utils.getImageData(this.primaryImg.el);
+          let hist = Utils.getHistogram(imgData);
+          this.chart.config = [
+            ['dataset.source', Histogram.mapValues(hist)],
+            ['color', Material.blue.base],
+            ['legend.show', true],
+            ['xAxis.axisLabel.show', true],
+            ['yAxis.axisLabel.show', true],
+            ['grid.left', '2%'],
+            ['grid.bottom', '5%'],
+            ['grid.right', '3%'],
+            ['series[0].type', 'bar'],
+            ['series[0].areaStyle', {}],
+            ['series[0].smooth', true]
+          ];
+        } else {
+          let imgData = Utils.getImageData(this.secondaryImg.el);
+          let hist = Utils.getHistogram(imgData);
+          this.chart.config = [
+            ['dataset.source', Histogram.mapValues(hist)],
+            ['color', Material.red.base],
+            ['legend.show', true],
+            ['xAxis.axisLabel.show', true],
+            ['yAxis.axisLabel.show', true],
+            ['grid.left', '2%'],
+            ['grid.bottom', '5%'],
+            ['grid.right', '3%'],
+            ['series[0].type', 'bar'],
+            ['series[0].areaStyle', {}],
+            ['series[0].smooth', true]
+          ];
+        }
+        this.chart.show = true;
       }
     },
     computed: {
@@ -496,7 +584,6 @@ import Utils from '@/api/utils';
         }
       },
       styleTrans() {
-        console.log("Computed Style")
         let rotate = 'rotate(' + this.transOp.r + 'deg)';
         let translate = 'translate(' + this.transOp.tX + 'px,'+this.transOp.tY+'px)';
         let scale = 'scale(' + this.transOp.sX + ',' + this.transOp.sY + ')';
@@ -505,6 +592,9 @@ import Utils from '@/api/utils';
       },
       gapContrast() {
         return this.operation === 'gap';
+      },
+      chartData() {
+        return this.chart.config;
       }
     }
   }
