@@ -82,13 +82,31 @@ const Utils = {
        doWebGL(cv,[Shaders.vertexShader,Shaders.fragmentShader],imgData);
     },
     getHistogram(imgData) {
-        let hist = new Array(255).fill(0);
+        let hist = {
+            data: new Array(256).fill(0),
+            max: {
+                amount: 0,
+                level: 0
+            },
+            min: {
+                amount: imgData.height * imgData.width,
+                level: 0
+            }
+        };
         for (let row = 0; row < imgData.height; row++) {
             for (let col = 0; col < imgData.width; col++) {
                 let pos = (row * imgData.width + col) * 4;
                 if (imgData.data[pos] === imgData.data[pos + 1] &&
                     imgData.data[pos] === imgData.data[pos + 2])
-                    ++hist[imgData.data[pos]];
+                    ++hist.data[imgData.data[pos]];
+                    if (hist.max.amount < hist.data[imgData.data[pos]]) {
+                        hist.max.amount = hist.data[imgData.data[pos]];
+                        hist.max.level = imgData.data[pos];
+                    } 
+                    if (hist.min.amount > hist.data[imgData.data[pos]]) {
+                        hist.min.amount = hist.data[imgData.data[pos]];
+                        hist.min.level = imgData.data[pos];
+                    } 
             }
         }
         return hist;
@@ -677,6 +695,26 @@ const Utils = {
     },
     equalizImage(imgData) {
         let hist = this.getHistogram(imgData);
+        let gK = new Array(256).fill(0);
+        let lMax = imgData.width * imgData.height;
+        for (let ac in gK) {
+            gK[ac] = hist.data[ac]/lMax;
+            if (ac > 0) gK[ac] += gK[ac-1];
+        }
+        for (let ac in gK) {
+            gK[ac] = Math.round(gK[ac] * 255);
+        }
+        for (let row = 0; row < imgData.height; row++) {
+            for (let col = 0; col < imgData.width; col++) {
+                let pos = (row * imgData.width + col) * 4;
+                let map = imgData.data[pos];
+                if (gK[imgData.data[pos]] != imgData.data[pos]) {
+                    map = gK[imgData.data[pos]];
+                }
+                imgData.data[pos] = imgData.data[pos + 1] = imgData.data[pos + 2] = map;       
+            }
+        }
+        return imgData;
     },
     opImageData(op,in1,in2,norm) {
         let out = new ImageData(in1.width,in1.height);

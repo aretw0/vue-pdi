@@ -248,10 +248,13 @@
         attach="#wb"
       >
         <v-widget title="Histograma" content-bg="white">
+           <v-btn @click="chart.show = false" icon slot="widget-header-action">
+              <v-icon class="text--secondary">close</v-icon>
+            </v-btn>
             <div slot="widget-content">
                 <e-chart
                 v-if="chart.show" 
-                :path-option="this.chart.config"
+                :path-option="chart.config"
                 height="400px"
                 width="100%"
                 >
@@ -515,7 +518,7 @@ import VWidget from '@/components/VWidget';
           let hist2 = Utils.getHistogram(imgData);
 
           this.chart.config = [
-            ['dataset.source', Histogram.mapTwoValues(hist1,hist2)],
+            ['dataset.source', Histogram.mapTwoValues(hist1.data,hist2.data)],
             ['color', [Material.blue.base,Material.red.base]],
             ['legend.show', true],
             ['xAxis.axisLabel.show', true],
@@ -534,7 +537,7 @@ import VWidget from '@/components/VWidget';
           let imgData = Utils.getImageData(this.primaryImg.el);
           let hist = Utils.getHistogram(imgData);
           this.chart.config = [
-            ['dataset.source', Histogram.mapValues(hist)],
+            ['dataset.source', Histogram.mapValues(hist.data)],
             ['color', Material.blue.base],
             ['legend.show', true],
             ['xAxis.axisLabel.show', true],
@@ -550,7 +553,7 @@ import VWidget from '@/components/VWidget';
           let imgData = Utils.getImageData(this.secondaryImg.el);
           let hist = Utils.getHistogram(imgData);
           this.chart.config = [
-            ['dataset.source', Histogram.mapValues(hist)],
+            ['dataset.source', Histogram.mapValues(hist.data)],
             ['color', Material.red.base],
             ['legend.show', true],
             ['xAxis.axisLabel.show', true],
