@@ -257,6 +257,11 @@ const Utils = {
             case 'po3x3':
             case 'media3':
             case 'media5':
+            case 'mediana3':
+            case 'mediana5':
+            case 'max':
+            case 'min':  
+            case 'mode':
             case 'h1':
             case 'h2':
             case 'm1':
@@ -397,6 +402,92 @@ const Utils = {
                 `;
             }
             break;
+            case 'mode': {
+                inject1 = ``;
+                inject2 = `
+                vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
+                vec4 mod;
+                vec4 now1;
+                vec4 now2;
+                int freqMod = 0;
+                int freq = 0;
+                for (int p1 = -1; p1 <= 1; ++p1) {
+                    for (int p2 = -1; p2 <= 1; ++p2) {
+                        now1 = texture(u_image, v_texCoord + onePixel * vec2(p1, p2));
+                        freq = 0;
+                        for (int i = -1; i <= 1; ++i) {
+                            for (int k = -1; k <= 1; ++k) {
+                                now2 = texture(u_image, v_texCoord + onePixel * vec2(i, k));
+                                
+                                bvec4 cmp = equal(mod,now2);
+                                
+                                if (cmp.r && cmp.g && cmp.b) {
+                                    freq++;
+                                }
+                            }
+                        }
+                        if (freq >= freqMod) {
+                            freqMod = freq;
+                            mod = now1;
+                        }
+                    }
+                }
+                colorFinal = mod;
+                `;
+            }
+            break;
+            case 'mediana3':
+            case 'mediana5': {
+                let ins = op === 'mediana3' ? 1 : 2;
+                inject1 = ``;
+                inject2 =`
+                vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
+                vec4 now;
+                vec4 ord[9];
+                int step1 = 0;
+                int step2 = 0;
+                for (int p1 = -${ins}; p1 <= ${ins}; ++p1) {
+                    for (int p2 = -${ins}; p2 <= ${ins}; ++p2) {
+                        now = texture(u_image, v_texCoord + onePixel * vec2(p1, p2));
+                        if (step1 != 0) {
+                            for (step2 = 0; step2 < step1; ++step2) {
+                                bvec4 cmp = lessThan(now,ord[step2]);
+                                if (cmp.r && cmp.g && cmp.g) {
+                                    for (int i = step1 - 1; i >= step2; --i) {
+                                        ord[i+1] = ord[i];
+                                    }
+                                    break;
+                                }
+                            }    
+                        }
+                        ord[step2] = now;
+                        step1++;
+                    }
+                }
+                colorFinal = ord[4];`;
+            }
+            break;
+            case 'max':
+            case 'min': {
+                let ins1 = op === 'min' ? `1,1,1` : `0,0,0`;
+                let ins2 = op === 'min' ? `lessThan` : `greaterThan`;
+                inject1 = ``;
+                inject2 = `
+                vec2 onePixel = vec2(1) / vec2(textureSize(u_image, 0));
+                vec4 res = vec4(${ins1},1);
+                vec4 now;
+                for (int p1 = -1; p1 <= 1; ++p1) {
+                    for (int p2 = -1; p2 <= 1; ++p2) {
+                        now = texture(u_image, v_texCoord + onePixel * vec2(p1, p2));
+                        bvec4 cmp = ${ins2}(now,res);
+                        if (cmp.r && cmp.g && cmp.g) {
+                            res = now;
+                        }
+                    }
+                }
+                colorFinal = res;`;
+            }
+            break;
             case 'inverse':
             case 'media3':
             case 'po2x2':
@@ -516,9 +607,6 @@ const Utils = {
                 colorFinal = sqrt(pow(color1,pot)+pow(color2,pot));
                 colorFinal.a = 1.0;
                 `;
-                // if (op === 'robts' || op === 'crossrobts') {
-                //     inject2 += `colorFinal.xyz = colorFinal.xyz + vec3(1);`;
-                // }
             }
             break;
             case 'kirsch':
