@@ -84,14 +84,16 @@ const Utils = {
     getHistogram(imgData) {
         let hist = {
             data: new Array(256).fill(0),
-            max: {
+            maxAmount: {
                 amount: 0,
                 level: 0
             },
-            min: {
+            minAmount: {
                 amount: imgData.height * imgData.width,
                 level: 0
-            }
+            },
+            min: 255,
+            max: 0
         };
         for (let row = 0; row < imgData.height; row++) {
             for (let col = 0; col < imgData.width; col++) {
@@ -99,13 +101,15 @@ const Utils = {
                 if (imgData.data[pos] === imgData.data[pos + 1] &&
                     imgData.data[pos] === imgData.data[pos + 2])
                     ++hist.data[imgData.data[pos]];
-                    if (hist.max.amount < hist.data[imgData.data[pos]]) {
-                        hist.max.amount = hist.data[imgData.data[pos]];
-                        hist.max.level = imgData.data[pos];
+                    hist.min = ((hist.min > imgData.data[pos]) ? imgData.data[pos] : hist.min);
+                    hist.max = ((hist.max < imgData.data[pos]) ? imgData.data[pos] : hist.max);
+                    if (hist.maxAmount.amount < hist.data[imgData.data[pos]]) {
+                        hist.maxAmount.amount = hist.data[imgData.data[pos]];
+                        hist.maxAmount.level = imgData.data[pos];
                     } 
-                    if (hist.min.amount > hist.data[imgData.data[pos]]) {
-                        hist.min.amount = hist.data[imgData.data[pos]];
-                        hist.min.level = imgData.data[pos];
+                    if (hist.minAmount.amount > hist.data[imgData.data[pos]]) {
+                        hist.minAmount.amount = hist.data[imgData.data[pos]];
+                        hist.minAmount.level = imgData.data[pos];
                     } 
             }
         }
@@ -140,7 +144,7 @@ const Utils = {
     menuOp (vue) {
         // nesse momento fazemos as operações
         let op = vue.operation;
-        let params;
+        let params = {};
         switch(op) {
             case 'sum': 
             case 'minus': 
@@ -198,7 +202,7 @@ const Utils = {
                 }
             }
             break;
-
+            // realce
             // equalização
             case 'equaliz': {
                 if  (vue.primaryImg.selected) {
@@ -213,7 +217,37 @@ const Utils = {
                 }
             }
             break;
-            // realce
+            case 'gama':
+                if  (vue.primaryImg.selected) {
+                    let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                    let imgData = this.getImageData(vue.primaryImg.el);
+                    let res = this.gamaCorrection(imgData,vue.valueParam);            
+                    this.putImageData(canvas,res);
+                    vue.pushCanvas(canvas);
+                    vue.pushMessage("Operação concluída",'success');
+                } else {
+                    vue.pushMessage("Selecione uma imagem primária","alert");
+                }
+            break;
+            // transformações não lineares
+            case 'root':
+            case 'expon':
+            case 'square':
+            case 'log': {
+                if  (vue.primaryImg.selected) {
+                    let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                    let imgData = this.getImageData(vue.primaryImg.el);
+                    let res = this.opTNL(op,imgData);            
+                    this.putImageData(canvas,res);
+                    vue.pushCanvas(canvas);
+                    vue.pushMessage("Operação concluída",'success');
+                } else {
+                    vue.pushMessage("Selecione uma imagem primária","alert");
+                }
+            }
+            break;
+
+            // transformações lineares
             case 'gap':
             case 'inverse':
 
@@ -250,13 +284,19 @@ const Utils = {
             case 'vert':
             case 'a45':
             case 'a135':
-                if (op === 'highbt' || op === 'dots') {
-                    params = vue.valueParam;
-                } else if (op === 'gap') {
-                    params = vue.gap;
-                }
-
                 if  (vue.primaryImg.selected) {
+                    if (op === 'highbt' || op === 'dots') {
+                        params = vue.valueParam;
+                    } else if (op === 'gap') {
+                        params.gapN = vue.gap;
+                        let hist = this.getHistogram(this.getImageData(vue.primaryImg.el));
+                        params.gapO = [scale_n(hist.min,0,255,0,1),scale_n(hist.max,0,25,0,1)];
+                    } else if (op === 'log') {
+                        let imgData = this.getImageData(vue.primaryImg.el);
+                        let hist = this.getHistogram(imgData);
+                        params = (1.0/Math.log(scale_n(1,0,255,0,1) + scale_n(hist.max,0,255,0,1)));
+                    }
+
                     let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
                     this.fragOpImage(op,canvas,vue.primaryImg.el,params);            
                     vue.pushCanvas(canvas);
@@ -321,17 +361,24 @@ const Utils = {
             }
             break;
             case 'gap': {
-                let location1;
+                let location1,location2;
                 locCb = function (gl,program) {
-                    location1 = gl.getUniformLocation(program, "u_gap[0]");
+                    location1 = gl.getUniformLocation(program, "u_gapN[0]");
+                    location2 = gl.getUniformLocation(program, "u_gapO[0]");
                 }; 
                 loadCb = function (gl) {
-                    gl.uniform1fv(location1, params);
+                    gl.uniform1fv(location1, params.gapN);
+                    gl.uniform1fv(location2, params.gapO);
                 };
-                inject1 = `uniform float u_gap[2];`;
+                inject1 = `uniform float u_gapN[2];
+                uniform float u_gapO[2];`;
                 inject2 = `
                 vec4 colorCmp = texture(u_image, v_texCoord);
-                if (colorCmp.r < u_gap[0]) {
+
+                colorCmp.rgb = (((u_gapN[1]-u_gapN[0])/(u_gapO[1]-u_gapO[0])) * (colorCmp.rgb - u_gapO[0])) + u_gapN[1];
+
+                // outro jeito sem calculo
+                /* if (colorCmp.r < u_gap[0]) {
                     colorCmp.r = u_gap[0];
                 } else if (colorCmp.r > u_gap[1]) {
                     colorCmp.r = u_gap[1];
@@ -345,7 +392,7 @@ const Utils = {
                     colorCmp.b = u_gap[0];
                 } else if (colorCmp.b > u_gap[1]) {
                     colorCmp.b = u_gap[1];
-                }
+                } */
                 colorFinal = colorCmp;
                 `;
             }
@@ -383,7 +430,6 @@ const Utils = {
                     let kernel = typeof Kernels[op] === 'function' ? Kernels[op](params) : Kernels[op];
                     gl.uniform1fv(location1, kernel);
                     gl.uniform1f(location2, computeKernelWeight(kernel));
-                    console.log(params);
                     if (op === 'dots') gl.uniform1f(location3, params);
                 };
                 inject1 =  `uniform float u_kernel[9];
@@ -429,7 +475,6 @@ const Utils = {
                 }; 
                 loadCb = function (gl) {
                     let convKernels = Kernels[op]();
-                    // console.log(convKernels);
                     gl.uniform1fv(location1, convKernels[0]);
                     gl.uniform1fv(location2, convKernels[1]);
                     gl.uniform1f(location3, computeKernelWeight(convKernels[0]));
@@ -503,7 +548,6 @@ const Utils = {
                 }; 
                 loadCb = function (gl) {
                     let convKernels = Kernels[op]();
-                    // console.log(convKernels);
                     gl.uniform1fv(location1, convKernels[0]);
                     gl.uniform1fv(location2, convKernels[1]);
                     gl.uniform1fv(location3, convKernels[2]);
@@ -693,6 +737,74 @@ const Utils = {
         doWebGL(cv,[Shaders.vertexShader,Shaders.makeFragment(inject1,inject2)],image,locCb,loadCb);
         
     },
+    opTNL(op,imgData) {
+        let out = new ImageData(imgData.width,imgData.height);
+        let r, g, b, c;
+        let hist = this.getHistogram(imgData);
+        switch (op) {
+            case 'log':
+                c = 255/Math.log(1 + hist.max);
+            break;
+            case 'root':
+                c = 255/Math.sqrt(hist.max);
+            break;
+            case 'square':
+                c = 255/Math.pow(hist.max,2);
+            break;
+            case 'expon':
+                c = 255/(Math.exp(hist.max) + 1);
+            break;
+        }
+        console.log(c, hist.max);
+        for (let row = 0; row < imgData.height; row++) {
+            for (let col = 0; col < imgData.width; col++) {
+                let pos = (row * imgData.width + col) * 4;
+                switch(op) {
+                    case 'log': {
+                        r = c * Math.log(imgData.data[pos] + 1);
+                        g = c * Math.log(imgData.data[pos + 1] + 1);
+                        b = c * Math.log(imgData.data[pos + 2] + 1);
+                        // console.log(r,g,b);
+                        out.data[pos] = r;
+                        out.data[pos + 1] = g;
+                        out.data[pos + 2] = b;
+                    }
+                    break;
+                    case 'root': {
+                        r = c * Math.sqrt(imgData.data[pos]);
+                        g = c * Math.sqrt(imgData.data[pos + 1]);
+                        b = c * Math.sqrt(imgData.data[pos + 2]);
+                        out.data[pos] = r;
+                        out.data[pos + 1] = g;
+                        out.data[pos + 2] = b;
+                    }
+                    break;
+                    case 'square': {
+                        r = c * Math.pow(imgData.data[pos],2);
+                        g = c * Math.pow(imgData.data[pos + 1],2);
+                        b = c * Math.pow(imgData.data[pos + 2],2);
+                        out.data[pos] = r;
+                        out.data[pos + 1] = g;
+                        out.data[pos + 2] = b;
+                    }
+                    break;
+                    case 'expon': {
+                        r = c * (Math.exp(imgData.data[pos]) + 1);
+                        g = c * (Math.exp(imgData.data[pos + 1]) + 1);
+                        b = c * (Math.exp(imgData.data[pos + 2]) + 1);
+                        out.data[pos] = r;
+                        out.data[pos + 1] = g;
+                        out.data[pos + 2] = b;
+                    }
+                    break;
+                }
+
+                out.data[pos+3] = 255;
+            }
+        }
+
+        return out;
+    },
     equalizImage(imgData) {
         let hist = this.getHistogram(imgData);
         let gK = new Array(256).fill(0);
@@ -716,15 +828,31 @@ const Utils = {
         }
         return imgData;
     },
+    gamaCorrection(imgData,params) {
+        let hist = this.getHistogram(imgData);
+        let c = 255/Math.pow(hist.max,params);
+        // let c = 1;
+        let out = new ImageData(imgData.width,imgData.height);
+        for (let row = 0; row < imgData.height; row++) {
+            for (let col = 0; col < imgData.width; col++) {
+                let pos = (row * imgData.width + col) * 4;
+                out.data[pos] = c * Math.pow(imgData.data[pos],params);
+                out.data[pos + 1] = c * Math.pow(imgData.data[pos + 1],params);
+                out.data[pos + 2] = c * Math.pow(imgData.data[pos + 2],params);
+                out.data[pos + 3] = 255;
+            }
+        }
+        return out;
+    },
     opImageData(op,in1,in2,norm) {
         let out = new ImageData(in1.width,in1.height);
         let res = {
             maxR: 0,
             maxG: 0,
             maxB: 0,
-            minR: 600,
-            minG: 600,
-            minB: 600,
+            minR: 255,
+            minG: 255,
+            minB: 255,
             data: []
         };
         for (let row = 0; row < in1.height; row++) {

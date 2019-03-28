@@ -168,7 +168,7 @@
             <v-list-tile>
               <v-list-tile-action>
                  <v-layout
-                  v-if="gapContrast"
+                  v-if="operation === 'gap'"
                   justify-space-between
                   row fill-height
                 >
@@ -184,7 +184,7 @@
                       type="number"
                     ></v-text-field>
                   </v-flex>
-            
+                  <v-spacer />
                   <v-flex xs8>
                     <v-range-slider
                       v-model="gap"
@@ -193,6 +193,7 @@
                       :step="0.1"
                     ></v-range-slider>
                   </v-flex>
+                  <v-spacer />
                   <v-flex
                     shrink
                     style="width: 60px"
@@ -207,8 +208,35 @@
                   </v-flex>
                 </v-layout>
                 <v-layout
+                  v-else-if="operation === 'gama'"
+                  justify-space-between row fill-height
+                >
+                  <v-flex
+                    shrink
+                    style="width: 60px"
+                  >
+                    <v-text-field
+                      v-model="valueParam"
+                      class="mt-0"
+                      hide-details
+                      single-line
+                      type="number"
+                    ></v-text-field>
+                  </v-flex>
+                  <v-spacer />
+                  <v-flex>
+                    <v-slider
+                          v-model="valueParam"
+                          thumb-label="always"
+                          :min="0.04"
+                          :max="25"
+                          :step="0.01"
+                    ></v-slider>
+                  </v-flex>
+                </v-layout>
+                <v-layout
                   v-else
-                  justify-center row wrap
+                  justify-space-between row fill-height
                 >
                 <v-flex
                     shrink
@@ -222,6 +250,7 @@
                       type="number"
                     ></v-text-field>
                   </v-flex>
+                  <v-spacer />
                   <v-flex>
                     <v-slider
                           v-model="valueParam"
@@ -339,6 +368,7 @@ import VWidget from '@/components/VWidget';
           case 'gap':
           case 'highbt':
           case 'dots':
+          case 'gama':
           this.menu = true;
           break;
           default:
@@ -592,12 +622,6 @@ import VWidget from '@/components/VWidget';
         let scale = 'scale(' + this.transOp.sX + ',' + this.transOp.sY + ')';
         let skew = 'skew(' + this.transOp.cX + 'deg,' + this.transOp.cY +'deg)';
         return { transform:  rotate + ' ' +translate + ' ' + scale + ' ' + skew }
-      },
-      gapContrast() {
-        return this.operation === 'gap';
-      },
-      chartData() {
-        return this.chart.config;
       }
     }
   }
