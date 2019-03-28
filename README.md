@@ -1,6 +1,6 @@
 # vue-pdi
 
-Projeto de processamento digital de imagens utilizando openCV.js e Vue.js 
+Projeto de processamento digital de imagens utilizando WebGL2 e Vue.js 
 
 ## Project setup
 ```
