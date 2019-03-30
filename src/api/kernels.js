@@ -25,12 +25,7 @@ const Kernels = {
       1, 1, 1, 1, 1,
       1, 1, 1, 1, 1
    ],
-   mediana3: [],
-   mediana5: [],
-   max: [],
-   min: [],
-   mode: [],
-      //preservar bordas
+   //preservar bordas
    kawa: [], // Kawahara
    nagmat: [], // Nagao e Matsuyama
    sombo: [], // Somboonkaew
@@ -72,21 +67,17 @@ const Kernels = {
    // halftoning (meio tom)
       // pontilhado ordenado
    po2x2: [
-      0, 0, 0,
-      0, 0, 2,
-      0, 3, 1
+      1, 6,
+      7, 5
    ],
    po2x3: [
-      0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0,
-      0, 0, 3, 0, 4,
-      0, 0, 5, 2, 1,
-      0, 0, 0, 0, 0
+      7, 1, 8,
+      9, 6, 5
    ],
    po3x3: [
-      6, 8, 4,
-      1, 0, 3,
-      5, 2, 7
+      7, 10, 5,
+      2, 1, 4,
+      6, 3, 9
    ],
       // pontilhado difuso
    floste: [], // Floyd e Steinberg

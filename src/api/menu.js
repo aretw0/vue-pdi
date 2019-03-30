@@ -128,6 +128,7 @@ const Menu =  [
             items: true,
             children: [
                 { name: 'kawa', title: 'Kawahara' },
+                { name: 'tomtsu', title: 'Tomita e Tsuji' },
                 { name: 'nagmat', title: 'Nagao e Matsuyama' },
                 { name: 'sombo', title: 'Somboonkaew' }
             ]
@@ -171,6 +172,7 @@ const Menu =  [
             group: 'halftone',
             items: true,
             children: [
+                { name: 'rogers', title: 'Rogers' },
                 { name: 'floste', title: 'Floyd e Steinberg' },
                 { name: 'jarjunin', title: 'Jarvis, Judice & Ninke' },
                 { name: 'stucki', title: 'Stucki' },

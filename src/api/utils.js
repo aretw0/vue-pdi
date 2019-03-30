@@ -247,14 +247,33 @@ const Utils = {
             }
             break;
 
+            // filtragem
+            case 'po2x2':
+            case 'po2x3':
+            case 'po3x3':
+            case 'jarjunin':
+            case 'rogers':
+            case 'stucki':
+            case 'stevarc':
+            case 'floste': {
+                if  (vue.primaryImg.selected) {
+                    let canvas = this.createCanvas([vue.moveEv,vue.clickEv,vue.dblclickEv]);
+                    let imgData = this.getImageData(vue.primaryImg.el);
+                    let res = this.halftoning(op,imgData);            
+                    this.putImageData(canvas,res);
+                    vue.pushCanvas(canvas);
+                    vue.pushMessage("Operação concluída",'success');
+                } else {
+                    vue.pushMessage("Selecione uma imagem primária","alert");
+                }
+            }
+            break;
+
             // transformações lineares
             case 'gap':
             case 'inverse':
 
             // filtragem
-            case 'po2x2':
-            case 'po2x3':
-            case 'po3x3':
             case 'media3':
             case 'media5':
             case 'mediana3':
@@ -490,8 +509,6 @@ const Utils = {
             break;
             case 'inverse':
             case 'media3':
-            case 'po2x2':
-            case 'po3x3':
             case 'h1':
             case 'h2':
             case 'm1':
@@ -824,6 +841,191 @@ const Utils = {
 
         doWebGL(cv,[Shaders.vertexShader,Shaders.makeFragment(inject1,inject2)],image,locCb,loadCb);
         
+    },
+    halftoning(op, imgData) {
+        switch(op) {
+            case 'rogers':
+            case 'jarjunin':
+            case 'stucki':
+            case 'stevarc':
+            case 'floste':
+                return this.halftonePD(op,imgData);
+            case 'po2x2':
+            case 'po2x3':
+            case 'po3x3':
+                return this.halftonePO(op,imgData);
+        }
+    },
+    halftonePD(op,image) {
+        var imageData = image.data;
+        var imageDataLength = imageData.length;
+        var w = image.width;
+        var lumR = [],
+            lumG = [],
+            lumB = [];
+        
+        var newPixel, err;
+        
+        for (var i = 0; i < 256; i++) {
+            lumR[i] = i * 0.299;
+            lumG[i] = i * 0.587;
+            lumB[i] = i * 0.110;
+        }
+
+        let adjusts;
+        let weight;
+        switch(op) {
+            case 'rogers':
+                adjusts = [2, 3];
+                weight = 8;
+            break;
+            case 'jarjunin':
+                adjusts = [
+                    7, 5, 3, 1
+                ];
+                weight = 40;
+            break;
+            case 'stucki':
+                adjusts = [
+                    8, 4, 2, 1
+                ];
+                weight = 42;
+            break;
+            case 'stevarc':
+                adjusts = [
+                    32, 30, 26, 16, 12, 5
+                ];
+                weight = 200;
+            break;
+            case 'floste':
+                adjusts = [
+                    7, 3, 5, 1
+                ];
+                weight = 23;
+            break;
+        }
+
+        
+        // Greyscale luminance (sets r pixels to luminance of rgb)
+        for (var i = 0; i <= imageDataLength; i += 4) {
+            imageData[i] = Math.floor(lumR[imageData[i]] + lumG[imageData[i+1]] + lumB[imageData[i+2]]);
+        }
+        
+        for (var currentPixel = 0; currentPixel <= imageDataLength; currentPixel += 4) {
+            // threshold for determining current pixel's conversion to a black or white pixel
+            newPixel = imageData[currentPixel] < 150 ? 0 : 255;
+            err = Math.floor((imageData[currentPixel] - newPixel) / weight);
+            imageData[currentPixel + 0 * 1 - 0 ] = newPixel;
+            switch (op) {
+                case 'floste': {
+                    imageData[currentPixel + 4 * 1 - 0 ] += err * 7;
+                    imageData[currentPixel + 4 * w - 4 ] += err * 3;
+                    imageData[currentPixel + 4 * w - 0 ] += err * 5;
+                    imageData[currentPixel + 4 * w + 4 ] += err * 1;
+                }
+                break;
+                case 'rogers': {
+                    imageData[currentPixel + 4 * 1 - 0 ] += err * 7;
+                    imageData[currentPixel + 4 * w - 0 ] += err * 3;
+                }
+                break;
+                case 'jarjunin': {
+                    imageData[currentPixel + 4 * 1 - 0 ] += err * 7;
+                    imageData[currentPixel + 4 * 1 + 4 ] += err * 5;
+                    
+                    imageData[currentPixel + 4 * w - 8 ] += err * 3;
+                    imageData[currentPixel + 4 * w - 4 ] += err * 5;
+                    imageData[currentPixel + 4 * w - 0 ] += err * 7;
+                    imageData[currentPixel + 4 * w + 4 ] += err * 5;
+                    imageData[currentPixel + 4 * w + 8 ] += err * 3;
+
+                    imageData[currentPixel + 4 * (w+w) - 8 ] += err * 1;
+                    imageData[currentPixel + 4 * (w+w) - 4 ] += err * 3;
+                    imageData[currentPixel + 4 * (w+w) - 0 ] += err * 5;
+                    imageData[currentPixel + 4 * (w+w) + 4 ] += err * 3;
+                    imageData[currentPixel + 4 * (w+w) + 8 ] += err * 1;
+                }
+                break;
+                case 'stucki': {
+                    imageData[currentPixel + 4 * 1 - 0 ] += err * 8;
+                    imageData[currentPixel + 4 * 1 + 4 ] += err * 4;
+                    
+                    imageData[currentPixel + 4 * w - 8 ] += err * 2;
+                    imageData[currentPixel + 4 * w - 4 ] += err * 4;
+                    imageData[currentPixel + 4 * w - 0 ] += err * 8;
+                    imageData[currentPixel + 4 * w + 4 ] += err * 4;
+                    imageData[currentPixel + 4 * w + 8 ] += err * 2;
+
+                    imageData[currentPixel + 4 * (w+w) - 8 ] += err * 1;
+                    imageData[currentPixel + 4 * (w+w) - 4 ] += err * 2;
+                    imageData[currentPixel + 4 * (w+w) - 0 ] += err * 4;
+                    imageData[currentPixel + 4 * (w+w) + 4 ] += err * 2;
+                    imageData[currentPixel + 4 * (w+w) + 8 ] += err * 1;
+                }
+                break;
+                case 'stevarc': {
+                    imageData[currentPixel + 4 * 1 + 8 ] += err * 32;
+                    
+                    imageData[currentPixel + 4 * w - 12 ] += err * 12;
+                    imageData[currentPixel + 4 * w - 4 ] += err * 26;
+                    imageData[currentPixel + 4 * w + 4 ] += err * 30;
+                    imageData[currentPixel + 4 * w + 12 ] += err * 16;
+
+                    imageData[currentPixel + 4 * (w+w) - 8 ] += err * 12;
+                    imageData[currentPixel + 4 * (w+w) - 0 ] += err * 26;
+                    imageData[currentPixel + 4 * (w+w) + 8 ] += err * 12;
+
+                    imageData[currentPixel + 4 * (w*3) - 12 ] += err * 5;
+                    imageData[currentPixel + 4 * (w*3) - 4 ] += err * 12;
+                    imageData[currentPixel + 4 * (w*3) + 4 ] += err * 12;
+                    imageData[currentPixel + 4 * (w*3) + 12 ] += err * 5;
+                }
+                break;
+
+            }
+            
+            // Set g and b values equal to r (effectively greyscales the image fully)
+            imageData[currentPixel + 1] = imageData[currentPixel + 2] = imageData[currentPixel];
+        }
+        
+        return image;
+    },
+    halftonePO(op,imgData) {
+        let out = new ImageData(imgData.width,imgData.height);
+        let kernel = Kernels[op];
+        let step1 = 1;
+        let step2 = 1;
+        let maxC;
+        switch(op) {
+            case 'po2x2':
+                maxC = 2;
+            break;
+            case 'po2x3':
+                maxC = 3;
+            break;
+            case 'po3x3':
+                maxC = 3;
+            break;
+        }
+        for (let row = 0; row < imgData.height; row++) {
+            for (let col = 0; col < imgData.width; col++) {
+                let pos = (row * imgData.width + col) * 4;
+                let step = step1 + step2 - 2;
+                out.data[pos] = (scale_n(imgData.data[pos],0,255,0,10) < kernel[step] ? 0 : 255);
+                out.data[pos + 1] = (scale_n(imgData.data[pos + 1],0,255,0,10) < kernel[step] ? 0 : 255);
+                out.data[pos + 2] = (scale_n(imgData.data[pos + 2],0,255,0,10) < kernel[step] ? 0 : 255);
+                out.data[pos + 3] = 255;
+
+                ++step1;
+                if (step1 > maxC) {
+                    step1 = 1;
+                } 
+            }
+            step1 = 1;
+            step2 += maxC;
+            if (step2 > kernel.length) step2 = 1;
+        }
+        return out;
     },
     opTNL(op,imgData) {
         let out = new ImageData(imgData.width,imgData.height);
